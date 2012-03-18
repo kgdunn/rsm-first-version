@@ -1,5 +1,7 @@
 from django.conf.urls.defaults import *
 from rsm.experiment import views
+from django.conf import settings
+
 
 urlpatterns = patterns('',
     (r'take-home-final^$', views.sign_in),
@@ -19,9 +21,19 @@ urlpatterns = patterns('',
       #'show_indexes': False}),
     #)
 
-urlpatterns += patterns('',
-# For example, files under _images/file.jpg will be retrieved from
-# settings.MEDIA_ROOT/file.jpg
-(r'^site_media/(?P<path>.*)$', 'django.views.static.serve',
-        {'document_root': views.DJANGO_SETTINGS.MEDIA_ROOT,})
-)
+#urlpatterns += patterns('',
+## For example, files under _images/file.jpg will be retrieved from
+## settings.MEDIA_ROOT/file.jpg
+#(r'^site_media/(?P<path>.*)$', 'django.views.static.serve',
+        #{'document_root': views.DJANGO_SETTINGS.MEDIA_ROOT,})
+#)
+
+
+if settings.DEBUG:
+    # Small problem: cannot show 404 templates /media/....css file, because
+    # 404 gets overridden by Django when in debug mode
+    urlpatterns += patterns(
+        '',
+        (r'^media/(?P<path>.*)$',
+         'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
+    )

@@ -319,7 +319,7 @@ def render_next_experiment(the_student):
 
     settings = {'max_experiments_allowed': max_experiments_allowed,
                 'token': token_string,
-                'figure_filename': filename}
+                'figure_filename': DJANGO_SETTINGS.MEDIA_URL + filename}
 
     my_logger.info('Dealing with student = ' + str(the_student.student_number) + '; has run ' + str(len(prev_expts)) + ' already.')
     t = loader.get_template("deal-with-experiment.html")
