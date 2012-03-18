@@ -1,5 +1,4 @@
 # Django settings for rsm project.
-import os
 this_dir = __file__[0:__file__.find('settings.py')]
 
 DEBUG = True
@@ -14,7 +13,7 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'rsm-expts.db',
+        'NAME': this_dir + 'rsm-expts.db',
         'USER': '',                      # Not used with sqlite3.
         'PASSWORD': '',                  # Not used with sqlite3.
         'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
@@ -101,6 +100,6 @@ INSTALLED_APPS = (
 LOG_FILENAME = '/var/django-projects/rsm/logfile.log'
 
 try:
-    execfile(this_dir + os.sep + 'local_settings.py')
+    execfile(this_dir + 'local_settings.py')
 except IOError:
     pass
