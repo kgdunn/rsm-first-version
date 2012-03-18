@@ -99,22 +99,21 @@ def generate_result(the_student, factors, bias):
     x1off = (480+385)/2.0
     x1scale = (480-385)/6.0
     x1 = np.array((np.array(x1s) - x1off)/(x1scale+0.0))
-    x1 = -x1
 
     x2off = (50+30)/2.0
     x2scale = (50-30)/6.0
     x2 = np.array((np.array(x2s) - x2off)/(x2scale+0.0))
-    x2 = -x2
 
-    r = np.sqrt(x1**2 + x2**2 )
-
-
+    # 2012 objective function
+    # -----------------------
     z_num = 10.2*x1 + 5.6*x2 - 4.9*x1**2 - 3*x2**2 - 12.6*x1*x2
     z_den = (0.1*x1**2 + 0.5*x2**2 + 1)**2
 
-    # Use the scimath library to take powers of negative exponents
 
     # 2011 objective function
+    # ------------------------
+    # Use the scimath library to take powers of negative exponents
+    #r = np.sqrt(x1**2 + x2**2 )
     # The "0.05" term can really make it difficult: increases the depth of the trap
     # just next to the optimum
     #phi = 0.05 * np.exp(1 - r + SM.power(x1+1, 0.3) + SM.power(x2+1, 0.2))
