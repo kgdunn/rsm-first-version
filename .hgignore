@@ -1,0 +1,7 @@
+logfile.log
+.*\.db
+.*\.pyc
+.*\.wpr
+.*\.wsgi
+media/admin/
+media/.*\.png

@@ -1,4 +1,6 @@
 # Django settings for rsm project.
+import os
+this_dir = __file__[0:__file__.find('settings.py')]
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -41,6 +43,13 @@ USE_I18N = True
 # Example: "/home/media/media.lawrence.com/"
 #MEDIA_ROOT = '/var/django-projects/media/rsm/'
 MEDIA_ROOT ='/home/kevindunn/django-projects/rsm/media/'
+if DEBUG:
+    MEDIA_ROOT = os.path.dirname(__file__) + os.sep + 'media' + os.sep
+else:
+    # For production: you'll want to copy the <base>/media/* files to your
+    # static location and modify this path to match your server.
+    MEDIA_ROOT = '<your path here>'
+
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
@@ -88,3 +97,9 @@ INSTALLED_APPS = (
 #    'staticfiles',
     'rsm.experiment',
 )
+
+
+try:
+    execfile(this_dir + os.sep + 'local_settings.py')
+except IOError:
+    pass

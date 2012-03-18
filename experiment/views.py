@@ -130,7 +130,6 @@ def generate_result(student_number, factors, bias):
 
     return (y, y_noisy)
 
-
 def plot_results(expts):
     """Plots the data into a PNG figure file"""
     factor_A = []
@@ -320,7 +319,6 @@ def render_next_experiment(the_student):
     c = Context({'PrevExpts': prev_expts, 'Student': student, 'Settings': settings})
     return HttpResponse(t.render(c))
 
-
 def setup_experiment(request, student_number):
     """
     Returns the web-page where the student can request a new experiment.
@@ -329,7 +327,6 @@ def setup_experiment(request, student_number):
     my_logger.debug('About to run experiment for student = ' + str(student_number))
     the_student = Student.objects.get(student_number=student_number)
     return render_next_experiment(the_student)
-
 
 def report_invalid_factors(student_number):
     my_logger.debug('Invalid values for factors received from student ' + student_number)
