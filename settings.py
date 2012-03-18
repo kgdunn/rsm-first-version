@@ -98,6 +98,7 @@ INSTALLED_APPS = (
     'rsm.experiment',
 )
 
+LOG_FILENAME = '/var/django-projects/rsm/logfile.log'
 
 try:
     execfile(this_dir + os.sep + 'local_settings.py')

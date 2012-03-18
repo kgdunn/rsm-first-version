@@ -51,11 +51,11 @@ from rsm.experiment.models import Student, Token, Experiment
 # * Base-line as a variable
 
 # Logging
-LOG_FILENAME = '/var/django-projects/rsm/logfile.log'
 import logging.handlers
 my_logger = logging.getLogger('MyLogger')
 my_logger.setLevel(logging.DEBUG)
-fh = logging.handlers.RotatingFileHandler(LOG_FILENAME, maxBytes=2000000, backupCount=5)
+fh = logging.handlers.RotatingFileHandler(DJANGO_SETTINGS.LOG_FILENAME,
+                                          maxBytes=2000000, backupCount=5)
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 fh.setFormatter(formatter)
 my_logger.addHandler(fh)
@@ -273,7 +273,7 @@ def get_experiment_list(the_student):
         #                'response': 'Delayed till %s' % diff.strftime("%d %B, %H:%m") , 'date_time': item.date_time, 'number': counter})
         #else:
         prev_expts.append({'factor_A': item.factor_A, 'factor_B': item.factor_B, 'factor_C': item.factor_C,
-                        'response': item.response_noisy, 'date_time': item.date_time, 'number': counter})
+                           'response': item.response_noisy, 'date_time': item.date_time, 'number': counter})
         counter += 1
     return prev_expts
 
@@ -288,8 +288,8 @@ def render_next_experiment(the_student):
     else:
         level = '400'
     student = {'name': the_student.first_name + ' ' + the_student.last_name,
-              'level': level, 'number': the_student.student_number, 'email': the_student.email_address,
-              'runs_used_so_far': the_student.runs_used_so_far}
+               'level': level, 'number': the_student.student_number, 'email': the_student.email_address,
+               'runs_used_so_far': the_student.runs_used_so_far}
 
     prev_expts = get_experiment_list(the_student)
 
@@ -507,8 +507,8 @@ def download_pdf(request, token):
                            str(round(expt['response'],1))])
 
     tblStyle = TableStyle([('BOX',(0,0), (-1,-1), 2,colors.black),
-                            ('BOX',(0,0), (-1,0), 1,colors.black),
-                            ('FONT',(0,0), (-1,0), 'Helvetica-Bold',10)])
+                           ('BOX',(0,0), (-1,0), 1,colors.black),
+                           ('FONT',(0,0), (-1,0), 'Helvetica-Bold',10)])
     table_obj = Table(table_data, style=tblStyle)
 
 
@@ -525,4 +525,3 @@ def download_pdf(request, token):
     c.save()
 
     return response
-
