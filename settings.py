@@ -1,4 +1,5 @@
 # Django settings for rsm project.
+import os
 this_dir = __file__[0:__file__.find('settings.py')]
 
 DEBUG = True
@@ -43,7 +44,7 @@ USE_I18N = True
 #MEDIA_ROOT = '/var/django-projects/media/rsm/'
 MEDIA_ROOT ='/home/kevindunn/django-projects/rsm/media/'
 if DEBUG:
-    MEDIA_ROOT = os.path.dirname(__file__) + os.sep + 'media' + os.sep
+    MEDIA_ROOT = this_dir + 'media' + os.sep
 else:
     # For production: you'll want to copy the <base>/media/* files to your
     # static location and modify this path to match your server.
