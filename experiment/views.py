@@ -32,7 +32,7 @@ from numpy.lib import scimath as SM
 # Settings
 token_length = 12
 max_experiments_allowed = 20
-show_result = False
+show_result = True
 
 # Command line use
 #import sys, os
@@ -82,7 +82,7 @@ def generate_random_token():
 
     return ''.join([random.choice('ABCEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz2345689') for i in range(token_length)])
 
-def generate_result(student_number, factors, bias):
+def generate_result(the_student, factors, bias):
     """
     Generates an experimental result for the student.
     The first error added is always the same, the second error
@@ -94,7 +94,7 @@ def generate_result(student_number, factors, bias):
     elif x3s == 'Xylene':
         x3s = 1.0
 
-    my_logger.debug('Generating a new experimental result for student number ' + student_number)
+    my_logger.debug('Generating a new experimental result for student number ' + the_student.student_number)
 
     x1off = (480+385)/2.0
     x1scale = (480-385)/6.0
@@ -108,21 +108,28 @@ def generate_result(student_number, factors, bias):
 
     r = np.sqrt(x1**2 + x2**2 )
 
+
+    z_num = 10.2*x1 + 5.6*x2 - 4.9*x1**2 - 3*x2**2 - 12.6*x1*x2
+    z_den = (0.1*x1**2 + 0.5*x2**2 + 1)**2
+
     # Use the scimath library to take powers of negative exponents
 
+    # 2011 objective function
     # The "0.05" term can really make it difficult: increases the depth of the trap
     # just next to the optimum
-    phi = 0.05 * np.exp(1 - r + SM.power(x1+1, 0.3) + SM.power(x2+1, 0.2))
-    y = 2 + 9*x1 + 7*x2 - 8*x1**2 - 2*x2**2 - 7*x1*x2
+    #phi = 0.05 * np.exp(1 - r + SM.power(x1+1, 0.3) + SM.power(x2+1, 0.2))
+    #y = 2 + 9*x1 + 7*x2 - 8*x1**2 - 2*x2**2 - 7*x1*x2
     # y = surface; phi is a modifier;
     # then we add the integer variable interaction (turned on or off by x3s)
     # and the offset
-    offset = 65.0;
-    y = (phi * y) + 0.5*x1 + (-0.50*x1**2)*x3s
-    y = np.real(y) * 2.0 + offset
+    #offset = 65.0
+    # y = (phi * y) + 0.5*x1 + (-0.50*x1**2)*x3s
+    # y = np.real(y) * 2.0 + offset
 
-    if int(student_number)>0:
-        np.random.seed(int(student_number))
+    y = np.real(z_num/z_den)
+
+    if int(the_student.student_number)>0:
+        np.random.seed(int(the_student.student_number))
         noise_sd = 0.009 * np.abs(np.max(y)) + 0.001
         y_noisy = y + np.random.normal(loc=0.0, scale=noise_sd) + np.random.normal(loc=0.0, scale=noise_sd, size=bias)[-1]
     else:
@@ -130,7 +137,7 @@ def generate_result(student_number, factors, bias):
 
     return (y, y_noisy)
 
-def plot_results(expts):
+def plot_results(expts, the_student):
     """Plots the data into a PNG figure file"""
     factor_A = []
     factor_B = []
@@ -178,12 +185,13 @@ def plot_results(expts):
         r = 70         # resolution of surface
         x1 = np.arange(limits_A[0], limits_A[1], step=(limits_A[1] - limits_A[0])/(r+0.0))
         x2 = np.arange(limits_B[0], limits_B[1], step=(limits_B[1] - limits_B[0])/(r+0.0))
-        X3_lo = 0.0;
-        X3_hi = 1.0;
+        X3_lo = 0.0
+        X3_hi = 1.0
 
         X1, X2 = np.meshgrid(x1, x2)
-        Y_lo, Y_lo_noisy = generate_result('0000000', (X1, X2, X3_lo), 1)
-        Y_hi, Y_hi_noisy = generate_result('0000000', (X1, X2, X3_hi), 1)
+        the_student.student_number = '0000000' # don't add random offset
+        Y_lo, Y_lo_noisy = generate_result(the_student, (X1, X2, X3_lo), 1)
+        Y_hi, Y_hi_noisy = generate_result(the_student, (X1, X2, X3_hi), 1)
 
         levels_lo = np.linspace(0.0, 100, 51) # np.array(50, 55, 60, 65, 70, 75, 80, 85, 90])
         levels_hi = np.linspace(1.0, 101, 51)
@@ -305,7 +313,7 @@ def render_next_experiment(the_student):
     student['runs_bonus'] = -0.25 * the_student.runs_used_so_far + 5.0
 
     # Generate a picture of previous experiments
-    filename = plot_results(prev_expts)
+    filename = plot_results(prev_expts, the_student)
 
     token_string = generate_random_token()
     Token.objects.get_or_create(token_string=token_string, student=the_student, active=True)
@@ -409,7 +417,7 @@ def run_experiment(request, token):
         return HttpResponse(t.render(c))
 
 
-    response, response_noisy = generate_result(student_number, [factor_A, factor_B, factor_C], bias=the_student.runs_used_so_far+1)
+    response, response_noisy = generate_result(the_student, [factor_A, factor_B, factor_C], bias=the_student.runs_used_so_far+1)
 
     # Time between experiments: 1.5 hours
     now = datetime.datetime.now()
@@ -516,7 +524,7 @@ def download_pdf(request, token):
 
     c.showPage()
 
-    filename = DJANGO_SETTINGS.MEDIA_ROOT + plot_results(prev_expts)
+    filename = DJANGO_SETTINGS.MEDIA_ROOT + plot_results(prev_expts, the_student)
 
     # When passing a filename: requires the Python Imaging Library (PIL)
     c.drawImage(filename, LMARGIN, BMARGIN,
