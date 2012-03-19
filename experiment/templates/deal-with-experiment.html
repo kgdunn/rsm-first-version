@@ -94,18 +94,18 @@ Generate the next experiment at the following conditions:
 <form action="/take-home-final/run-experiment-{{Settings.token}}/" method="POST" enctype="multipart/form-data">
 	<table class="data-entry-table">
 		<tr>
-			<td>Reactor temperature:</td>
+			<td>Reaction temperature:</td>
 			<td><input id="factor_A_input" type="text" name="factor_A" maxlength="7" size="7" onkeyup="validate_factor_A(this.value)" /> K</td>
 			<td width="400"><span id="factor_A_constraint" class="constraint_colour"></span></td>
 		</tr>
 		<tr>
-			<td>Batch duration:</td>
+			<td>Contact time:</td>
 			<td><input id="factor_B_input" type="text" name="factor_B" maxlength="7" size="7" onkeyup="validate_factor_B(this.value)"/> min</td>
 			<td width="400"><span id="factor_B_constraint" class="constraint_colour"></span></td>
         </tr>
 		<tr>
-            <td>Solvent</td>
-            <td><select name="factor_C"><option value="Acetone">Acetone<option value="Xylene">Xylene</select></td>
+            <td>NaCl</td>
+            <td><select name="factor_C"><option value="Low">Low concentration NaCl<option value="High">High concentration NaCL</select></td>
 			<td width="400"></td>
                 </tr>
 	</table>
@@ -124,9 +124,9 @@ Generate the next experiment at the following conditions:
     <tr>
     <th>Experiment number</th>
     <th>Date and time</th>
-    <th>Reactor temperature [K]</th>
-    <th>Batch duration [min]</th>
-    <th>Solvent</th>
+    <th>Reaction temperature [K]</th>
+    <th>Contact time [min]</th>
+    <th>NaCl concentration</th>
     <th>Conversion [%]</th>
     </tr>
     <tr class="even expt-result">
@@ -134,7 +134,7 @@ Generate the next experiment at the following conditions:
         <td class="datetime">Baseline</td>
 	<td class="factor_A">463.0</td>
         <td class="factor_B">28.0</td>
-        <td class="factor_C">Acetone</td>
+        <td class="factor_C">NaCl concentration low</td>
         <td class="response">63.5</td>
     </tr>
 

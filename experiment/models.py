@@ -16,8 +16,8 @@ class Student(models.Model):
 class Experiment(models.Model):
 
     factor_C_choice = (
-            ('Acetone', u'Acetone'),
-            ('Xylene', u'Xylene'),
+            ('Low', u'Low concentration NaCl'),
+            ('High', u'High concentration NaCl'),
             )
 
     student = models.ForeignKey(Student)

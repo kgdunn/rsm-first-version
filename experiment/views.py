@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# encoding: utf-8
+
 # Django imports
 from django.template import loader, Context
 from django.http import HttpResponseRedirect, HttpResponse
@@ -89,23 +92,29 @@ def generate_result(the_student, factors, bias):
     added is proportional to the number of runs.
     """
     x1s, x2s, x3s = factors
-    if x3s == 'Acetone':
+    if x3s == 'Low':
         x3s = 0.0
-    elif x3s == 'Xylene':
+    elif x3s == 'High':
         x3s = 1.0
 
     my_logger.debug('Generating a new experimental result for student number ' + the_student.student_number)
 
-    x1off = (480+385)/2.0
-    x1scale = (480-385)/6.0
+    x1off = (85+120)/2.0    # midpoint
+    x1scale = (120-85)/6.0  # a range of 6 units from low to high
     x1 = np.array((np.array(x1s) - x1off)/(x1scale+0.0))
 
-    x2off = (50+30)/2.0
+    x2off = (50+30)/2.0     #
     x2scale = (50-30)/6.0
     x2 = np.array((np.array(x2s) - x2off)/(x2scale+0.0))
 
+
+
     # 2012 objective function
     # -----------------------
+    # Switch x1 and x2 around: makes more sense in the contect of the 2012
+    # problem statement
+    x1, x2 = x2, x1
+    x2 = -x2
     z_num = 10.2*x1 + 5.6*x2 - 4.9*x1**2 - 3*x2**2 - 12.6*x1*x2
     z_den = (0.1*x1**2 + 0.5*x2**2 + 1)**2
 
@@ -125,7 +134,7 @@ def generate_result(the_student, factors, bias):
     # y = (phi * y) + 0.5*x1 + (-0.50*x1**2)*x3s
     # y = np.real(y) * 2.0 + offset
 
-    y = np.real(z_num/z_den)
+    y = np.real(z_num/z_den) + the_student.offset
 
     if int(the_student.student_number)>0:
         np.random.seed(int(the_student.student_number))
@@ -153,11 +162,11 @@ def plot_results(expts, the_student):
     full_filename = DJANGO_SETTINGS.MEDIA_ROOT + filename
 
     # Baseline and limits
-    baseline_xA = 463
-    baseline_xB = 28
-    baseline_xC = 'Acetone'
-    limits_A = [370, 500]
-    limits_B = [20, 60]
+    baseline_xA = 93
+    baseline_xB = 50
+    baseline_xC = 'Low'
+    limits_A = [85, 120]
+    limits_B = [35, 60]
 
     # Start and end point of the linear constraint region
     # constraint equation: x+y=2 (in scaled units)
@@ -177,8 +186,8 @@ def plot_results(expts, the_student):
     rect = [0.15, 0.1, 0.80, 0.85] # Left, bottom, width, height
     ax = fig.add_axes(rect, frameon=True)
     ax.set_title('Response surface: experiments performed', fontsize=16)
-    ax.set_xlabel('Reactor temperature [K]', fontsize=16)
-    ax.set_ylabel('Batch duration [min]', fontsize=16)
+    ax.set_xlabel('Reaction temperature [C]', fontsize=16)
+    ax.set_ylabel('Contact time [min]', fontsize=16)
 
     if show_result:
         r = 70         # resolution of surface
@@ -207,17 +216,17 @@ def plot_results(expts, the_student):
     ax.plot(baseline_xA, baseline_xB, 'k.', linewidth=2, ms=20)
 
     for idx, entry_A in enumerate(factor_A):
-        if factor_C[idx] == 'Acetone':
+        if factor_C[idx] == 'Low':
             ax.plot(entry_A, factor_B[idx], 'k.', ms=20)
         else:
             ax.plot(entry_A, factor_B[idx], 'r.', ms=20)
         ax.text(entry_A+dx, factor_B[idx]+dy, str(idx+1))
 
     ax.plot(464, 54, 'k.', ms=20)
-    ax.text(466, 54, 'Acetone', va='center', ha='left')
+    ax.text(466, 54, 'Low NaCl concentration', va='center', ha='left')
 
     ax.plot(464, 52, 'r.', ms=20)
-    ax.text(466, 52, 'Xylene', va='center', ha='left')
+    ax.text(466, 52, 'High NaCl concentration', va='center', ha='left')
 
     ax.set_xlim(limits_A)
     ax.set_ylim(limits_B)
@@ -359,9 +368,9 @@ def run_experiment(request, token):
     factor_A = request.POST.get('factor_A', '')
     factor_B = request.POST.get('factor_B', '')
     factor_C = request.POST.get('factor_C', '')
-    if factor_C == 'Acetone':
+    if factor_C == 'Low':
         pass
-    elif factor_C == 'Xylene':
+    elif factor_C == 'High':
         pass
     else:
         report_invalid_factors(student_number)
@@ -463,7 +472,7 @@ def download_csv(request, token):
     response['Content-Disposition'] = 'attachment; filename=takehome-2011-group-' + the_student.student_number + '-' + token + '.csv'
     writer = csv.writer(response)
     writer.writerow(['Number', 'DateTime', 'Reactor temperature [K]', 'Batch duration [min]', 'Solvent', 'Conversion [%]'])
-    writer.writerow(['0','Baseline','463.0','28.0','Acetone','63.5'])
+    writer.writerow(['0','Baseline','93.0','50.0','Low','63.5'])
     for expt in prev_expts:
         writer.writerow([str(expt['number']),
                          expt['date_time'].strftime('%d %B %Y %H:%M:%S'),
@@ -502,7 +511,7 @@ def download_pdf(request, token):
     frameWidth = W - (LMARGIN + RMARGIN)
     frameHeight = H - (TMARGIN + BMARGIN+30*mm)
     frame = Frame(LMARGIN, BMARGIN, frameWidth, frameHeight, showBoundary=0)
-    table_data = [['Run', 'Date/Time of experiment', 'Reactors temperature [K]', 'Batch duration [min]', 'Solvent used', 'Conversion [%]']]
+    table_data = [['Run', 'Date/Time of experiment', 'Reaction temperature [C]', 'Batch duration [min]', 'NaCl concentration', 'Profit [c/kg]']]
 
     prev_expts = get_experiment_list(the_student)
     for expt in prev_expts:
