@@ -3,7 +3,7 @@ from rsm.experiment.models import Student, Experiment, Token
 
 class TokenAdmin(admin.ModelAdmin):
     list_per_page = 2000
-    list_display = ('student', 'token_string', 'active')
+    #list_display = ('student', 'token_string', 'active')
 
 class StudentAdmin(admin.ModelAdmin):
     list_per_page = 200

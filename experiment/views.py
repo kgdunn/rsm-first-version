@@ -53,6 +53,21 @@ from rsm.experiment.models import Student, Token, Experiment
 # * PDF download link (using ReportLab to create the PDF)
 # * Base-line as a variable
 
+# Experimental conditions
+# ===============================
+# Baseline and limits
+baseline_xA = 93
+baseline_xB = 50
+baseline_xC = 'Low'
+limits_A = [85, 120]
+limits_B = [35, 60]
+
+# Start and end point of the linear constraint region
+# constraint equation: x+y=2 (in scaled units)
+constraint_a = [100, 60]
+constraint_b = [120, 48]
+
+
 # Logging
 import logging.handlers
 my_logger = logging.getLogger('MyLogger')
@@ -85,7 +100,7 @@ def generate_random_token():
 
     return ''.join([random.choice('ABCEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz2345689') for i in range(token_length)])
 
-def generate_result(the_student, factors, bias):
+def generate_result(the_student, factors, bias, pure_response=False):
     """
     Generates an experimental result for the student.
     The first error added is always the same, the second error
@@ -106,7 +121,6 @@ def generate_result(the_student, factors, bias):
     x2off = (50+30)/2.0     #
     x2scale = (50-30)/6.0
     x2 = np.array((np.array(x2s) - x2off)/(x2scale+0.0))
-
 
 
     # 2012 objective function
@@ -136,12 +150,12 @@ def generate_result(the_student, factors, bias):
 
     y = np.real(z_num/z_den) + the_student.offset
 
-    if int(the_student.student_number)>0:
+    if pure_response:
+        y_noisy = y
+    else:
         np.random.seed(int(the_student.student_number))
         noise_sd = 0.009 * np.abs(np.max(y)) + 0.001
         y_noisy = y + np.random.normal(loc=0.0, scale=noise_sd) + np.random.normal(loc=0.0, scale=noise_sd, size=bias)[-1]
-    else:
-        y_noisy = y
 
     return (y, y_noisy)
 
@@ -160,18 +174,6 @@ def plot_results(expts, the_student):
     data_string = str(factor_A) + str(factor_B) + str(factor_C) + str(response)
     filename = hashlib.md5(data_string).hexdigest() + '.png'
     full_filename = DJANGO_SETTINGS.MEDIA_ROOT + filename
-
-    # Baseline and limits
-    baseline_xA = 93
-    baseline_xB = 50
-    baseline_xC = 'Low'
-    limits_A = [85, 120]
-    limits_B = [35, 60]
-
-    # Start and end point of the linear constraint region
-    # constraint equation: x+y=2 (in scaled units)
-    constraint_a = [370, 85.5555555555]
-    constraint_b = [500, 27.7777777777777777777]
 
     # Offsets for labeling points
     dx = 1.2
@@ -197,9 +199,8 @@ def plot_results(expts, the_student):
         X3_hi = 1.0
 
         X1, X2 = np.meshgrid(x1, x2)
-        the_student.student_number = '0000000' # don't add random offset
-        Y_lo, Y_lo_noisy = generate_result(the_student, (X1, X2, X3_lo), 1)
-        Y_hi, Y_hi_noisy = generate_result(the_student, (X1, X2, X3_hi), 1)
+        Y_lo, Y_lo_noisy = generate_result(the_student, (X1, X2, X3_lo), 1, pure_response=True)
+        Y_hi, Y_hi_noisy = generate_result(the_student, (X1, X2, X3_hi), 1, pure_response=True)
 
         levels_lo = np.linspace(0.0, 100, 51) # np.array(50, 55, 60, 65, 70, 75, 80, 85, 90])
         levels_hi = np.linspace(1.0, 101, 51)
@@ -265,7 +266,7 @@ def sign_in(request):
             # If student number not in list, tell them they are not registered
             return HttpResponseRedirect('/take-home-final/not-registered')
         else:
-            return setup_experiment(request, form_student_number)
+            return setup_experiment(request, the_student)
 
     # Non-POST access of the sign-in page: display the login page to the user
     else:
@@ -324,7 +325,7 @@ def render_next_experiment(the_student):
     filename = plot_results(prev_expts, the_student)
 
     token_string = generate_random_token()
-    Token.objects.get_or_create(token_string=token_string, student=the_student, active=True)
+    token_item = Token.objects.get_or_create(token_string=token_string, student=the_student, active=True)
 
     settings = {'max_experiments_allowed': max_experiments_allowed,
                 'token': token_string,
@@ -335,13 +336,13 @@ def render_next_experiment(the_student):
     c = Context({'PrevExpts': prev_expts, 'Student': student, 'Settings': settings})
     return HttpResponse(t.render(c))
 
-def setup_experiment(request, student_number):
+def setup_experiment(request, the_student):
     """
     Returns the web-page where the student can request a new experiment.
     We can assume the student is already registered.
     """
-    my_logger.debug('About to run experiment for student = ' + str(student_number))
-    the_student = Student.objects.get(student_number=student_number)
+    my_logger.debug('About to run experiment for student = ' + str(the_student.student_number))
+    #the_student = Student.objects.get(student_number=student_number)
     return render_next_experiment(the_student)
 
 def report_invalid_factors(student_number):
@@ -384,13 +385,18 @@ def run_experiment(request, token):
 
     # Check constraints:
     satisfied = True
-    if factor_A > 480.0 or factor_A < 390.0:
+    if factor_A > 120.0 or factor_A < 85.0:
         satisfied = False
-    if factor_B > 50.0 or factor_B < 20.0:
+    if factor_B > 60.0 or factor_B < 35.0:
         satisfied = False
 
-    m = (36.6666666666666667-50.0)/(480.0 - 450.0)
-    c = 50.0 - m * 450.0
+    # 2011
+    # m = (36.6666666666666667-50.0)/(480.0 - 450.0)
+    # c = 50.0 - m * 450.0
+
+    # 2012
+    m = (48.0 - 60.0)/(120.0 - 100.0)
+    c = 60.0 - m * 100.0
     if factor_A*m + c < factor_B:    # predicted_B > actual_B: then you are in the constraint region
         satisfied = False
 
@@ -471,7 +477,7 @@ def download_csv(request, token):
     response = HttpResponse(mimetype='text/csv')
     response['Content-Disposition'] = 'attachment; filename=takehome-2011-group-' + the_student.student_number + '-' + token + '.csv'
     writer = csv.writer(response)
-    writer.writerow(['Number', 'DateTime', 'Reactor temperature [K]', 'Batch duration [min]', 'Solvent', 'Conversion [%]'])
+    writer.writerow(['Number', 'DateTime', 'Reactor temperature [K]', 'Contact time [min]', 'Solvent', 'Conversion [%]'])
     writer.writerow(['0','Baseline','93.0','50.0','Low','63.5'])
     for expt in prev_expts:
         writer.writerow([str(expt['number']),
@@ -511,7 +517,7 @@ def download_pdf(request, token):
     frameWidth = W - (LMARGIN + RMARGIN)
     frameHeight = H - (TMARGIN + BMARGIN+30*mm)
     frame = Frame(LMARGIN, BMARGIN, frameWidth, frameHeight, showBoundary=0)
-    table_data = [['Run', 'Date/Time of experiment', 'Reaction temperature [C]', 'Batch duration [min]', 'NaCl concentration', 'Profit [c/kg]']]
+    table_data = [['Run', 'Date/Time of experiment', 'Reaction temperature [C]', 'Contact time [min]', 'NaCl concentration', 'Profit [c/kg]']]
 
     prev_expts = get_experiment_list(the_student)
     for expt in prev_expts:

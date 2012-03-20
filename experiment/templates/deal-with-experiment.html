@@ -17,9 +17,9 @@ function check_joint_constraint(factor_A, factor_B)
 {
 	factor_A = parseFloat(factor_A)
 	factor_B = parseFloat(factor_B)
-	m = -20/45.0
-	c = 250.0
-	if (factor_A*m + c > factor_B)
+	m = -0.6
+	c = 120
+	if (factor_A*m + c >= factor_B)
 	{
 		document.getElementById("joint_constraint").innerHTML = 'Joint constraint: OK';
 		document.getElementById("joint_constraint").className = "constraint_OK";
@@ -34,7 +34,7 @@ function check_joint_constraint(factor_A, factor_B)
 function validate_factor_A(factor_A)
 {
 	var valid = new Boolean(false);
-	if (factor_A >= 390 && factor_A <= 480){
+	if (factor_A >= 85 && factor_A <= 120){
 		value=true;
 		document.getElementById("factor_A_constraint").innerHTML = 'Temperature constraint: OK';
 		document.getElementById("factor_A_constraint").className = "constraint_OK";
@@ -49,14 +49,14 @@ function validate_factor_A(factor_A)
 function validate_factor_B(factor_B)
 {
 	var valid = new Boolean(false);
-	if (factor_B >= 20 && factor_B <= 50){
+	if (factor_B >= 35 && factor_B <= 60){
 		value=true;
-		document.getElementById("factor_B_constraint").innerHTML = 'Batch duration constraint: OK';
+		document.getElementById("factor_B_constraint").innerHTML = 'Contact constraint: OK';
 		document.getElementById("factor_B_constraint").className = "constraint_OK";
 	}
 	else
 	{
-		document.getElementById("factor_B_constraint").innerHTML = 'Batch duration constraint: violated';
+		document.getElementById("factor_B_constraint").innerHTML = 'Contact time constraint: violated';
 		document.getElementById("factor_B_constraint").className = "constraint_violated";
 	}
 	check_joint_constraint(document.getElementById("factor_A_input").value, factor_B)
@@ -95,7 +95,7 @@ Generate the next experiment at the following conditions:
 	<table class="data-entry-table">
 		<tr>
 			<td>Reaction temperature:</td>
-			<td><input id="factor_A_input" type="text" name="factor_A" maxlength="7" size="7" onkeyup="validate_factor_A(this.value)" /> K</td>
+			<td><input id="factor_A_input" type="text" name="factor_A" maxlength="7" size="7" onkeyup="validate_factor_A(this.value)" />°C</td>
 			<td width="400"><span id="factor_A_constraint" class="constraint_colour"></span></td>
 		</tr>
 		<tr>
@@ -104,7 +104,7 @@ Generate the next experiment at the following conditions:
 			<td width="400"><span id="factor_B_constraint" class="constraint_colour"></span></td>
         </tr>
 		<tr>
-            <td>NaCl</td>
+            <td>NaCl concentration:</td>
             <td><select name="factor_C"><option value="Low">Low concentration NaCl<option value="High">High concentration NaCL</select></td>
 			<td width="400"></td>
                 </tr>
@@ -124,7 +124,7 @@ Generate the next experiment at the following conditions:
     <tr>
     <th>Experiment number</th>
     <th>Date and time</th>
-    <th>Reaction temperature [K]</th>
+    <th>Reaction temperature [°C]</th>
     <th>Contact time [min]</th>
     <th>NaCl concentration</th>
     <th>Conversion [%]</th>
@@ -132,8 +132,8 @@ Generate the next experiment at the following conditions:
     <tr class="even expt-result">
         <td class="expt-number"></td>
         <td class="datetime">Baseline</td>
-	<td class="factor_A">463.0</td>
-        <td class="factor_B">28.0</td>
+	<td class="factor_A">93.0</td>
+        <td class="factor_B">50.0</td>
         <td class="factor_C">NaCl concentration low</td>
         <td class="response">63.5</td>
     </tr>
