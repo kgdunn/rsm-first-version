@@ -60,7 +60,7 @@ baseline_xA = 93
 baseline_xB = 50
 baseline_xC = 'Low'
 limits_A = [80, 120]
-limits_B = [35, 60]
+limits_B = [30, 60]
 
 # Start and end point of the linear constraint region
 # constraint equation: x+y=2 (in scaled units)
@@ -387,7 +387,7 @@ def run_experiment(request, token):
     satisfied = True
     if factor_A > 120.0 or factor_A < 80.0:
         satisfied = False
-    if factor_B > 60.0 or factor_B < 35.0:
+    if factor_B > 60.0 or factor_B < 30.0:
         satisfied = False
 
     # 2011

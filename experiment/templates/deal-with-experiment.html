@@ -34,7 +34,7 @@ function check_joint_constraint(factor_A, factor_B)
 function validate_factor_A(factor_A)
 {
 	var valid = new Boolean(false);
-	if (factor_A >= 85 && factor_A <= 120){
+	if (factor_A >= 80 && factor_A <= 120){
 		value=true;
 		document.getElementById("factor_A_constraint").innerHTML = 'Temperature constraint: OK';
 		document.getElementById("factor_A_constraint").className = "constraint_OK";
@@ -49,7 +49,7 @@ function validate_factor_A(factor_A)
 function validate_factor_B(factor_B)
 {
 	var valid = new Boolean(false);
-	if (factor_B >= 35 && factor_B <= 60){
+	if (factor_B >= 30 && factor_B <= 60){
 		value=true;
 		document.getElementById("factor_B_constraint").innerHTML = 'Contact constraint: OK';
 		document.getElementById("factor_B_constraint").className = "constraint_OK";
