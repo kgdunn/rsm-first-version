@@ -315,7 +315,7 @@ def render_next_experiment(the_student):
     for entry in prev_expts:
         response.append(entry['response'])
     highest_profit = np.max(response)
-    #my_logger.debug('Conversion = ' + str(highest_profit))
+    #my_logger.debug('Profit = ' + str(highest_profit))
     max_profit = -10
     baseline = 63.5
     student['profit_bonus'] =  3.0 * (highest_profit - baseline) / (max_profit - baseline)
