@@ -223,11 +223,11 @@ def plot_results(expts, the_student):
             ax.plot(entry_A, factor_B[idx], 'r.', ms=20)
         ax.text(entry_A+dx, factor_B[idx]+dy, str(idx+1))
 
-    ax.plot(106, 57, 'k.', ms=20)
-    ax.text(107, 57, 'Low NaCl concentration', va='center', ha='left')
+    ax.plot(107, 57, 'k.', ms=20)
+    ax.text(108, 57, 'Low NaCl concentration', va='center', ha='left')
 
-    ax.plot(106, 59, 'r.', ms=20)
-    ax.text(107, 59, 'High NaCl concentration', va='center', ha='left')
+    ax.plot(107, 59, 'r.', ms=20)
+    ax.text(108, 59, 'High NaCl concentration', va='center', ha='left')
 
     ax.set_xlim(limits_A)
     ax.set_ylim(limits_B)
