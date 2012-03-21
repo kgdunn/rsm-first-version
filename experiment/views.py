@@ -56,8 +56,8 @@ from rsm.experiment.models import Student, Token, Experiment
 # Experimental conditions
 # ===============================
 # Baseline and limits
-baseline_xA = 93
-baseline_xB = 50
+baseline_xA = 90.0
+baseline_xB = 45.0
 baseline_xC = 'Low'
 limits_A = [80, 120]
 limits_B = [30, 60]
@@ -223,11 +223,11 @@ def plot_results(expts, the_student):
             ax.plot(entry_A, factor_B[idx], 'r.', ms=20)
         ax.text(entry_A+dx, factor_B[idx]+dy, str(idx+1))
 
-    ax.plot(464, 54, 'k.', ms=20)
-    ax.text(466, 54, 'Low NaCl concentration', va='center', ha='left')
+    ax.plot(106, 57, 'k.', ms=20)
+    ax.text(107, 57, 'Low NaCl concentration', va='center', ha='left')
 
-    ax.plot(464, 52, 'r.', ms=20)
-    ax.text(466, 52, 'High NaCl concentration', va='center', ha='left')
+    ax.plot(106, 59, 'r.', ms=20)
+    ax.text(107, 59, 'High NaCl concentration', va='center', ha='left')
 
     ax.set_xlim(limits_A)
     ax.set_ylim(limits_B)
@@ -478,7 +478,7 @@ def download_csv(request, token):
     response['Content-Disposition'] = 'attachment; filename=takehome-2011-group-' + the_student.student_number + '-' + token + '.csv'
     writer = csv.writer(response)
     writer.writerow(['Number', 'DateTime', 'Reactor temperature [C]', 'Contact time [min]', 'NaCl concentration', 'Profit [c/kg]'])
-    writer.writerow(['0','Baseline','93.0','50.0','Low','63.5'])
+    #writer.writerow(['0','Baseline','93.0','50.0','Low','63.5'])
     for expt in prev_expts:
         writer.writerow([str(expt['number']),
                          expt['date_time'].strftime('%d %B %Y %H:%M:%S'),
