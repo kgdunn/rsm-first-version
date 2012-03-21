@@ -59,7 +59,7 @@ from rsm.experiment.models import Student, Token, Experiment
 baseline_xA = 93
 baseline_xB = 50
 baseline_xC = 'Low'
-limits_A = [85, 120]
+limits_A = [80, 120]
 limits_B = [35, 60]
 
 # Start and end point of the linear constraint region
@@ -385,7 +385,7 @@ def run_experiment(request, token):
 
     # Check constraints:
     satisfied = True
-    if factor_A > 120.0 or factor_A < 85.0:
+    if factor_A > 120.0 or factor_A < 80.0:
         satisfied = False
     if factor_B > 60.0 or factor_B < 35.0:
         satisfied = False
@@ -477,7 +477,7 @@ def download_csv(request, token):
     response = HttpResponse(mimetype='text/csv')
     response['Content-Disposition'] = 'attachment; filename=takehome-2011-group-' + the_student.student_number + '-' + token + '.csv'
     writer = csv.writer(response)
-    writer.writerow(['Number', 'DateTime', 'Reactor temperature [K]', 'Contact time [min]', 'Solvent', 'Conversion [%]'])
+    writer.writerow(['Number', 'DateTime', 'Reactor temperature [C]', 'Contact time [min]', 'NaCl concentration', 'Profit [c/kg]'])
     writer.writerow(['0','Baseline','93.0','50.0','Low','63.5'])
     for expt in prev_expts:
         writer.writerow([str(expt['number']),
