@@ -55,8 +55,8 @@ from rsm.experiment.models import Student, Token, Experiment
 # Experimental conditions
 # ===============================
 # Baseline and limits
-baseline_xA = 92.0
-baseline_xB = 46.0
+baseline_xA = 95.0
+baseline_xB = 35.0
 baseline_xC = 'Low'
 limits_A = [80, 120]
 limits_B = [30, 60]
