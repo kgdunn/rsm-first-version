@@ -49,15 +49,14 @@ from rsm.experiment.models import Student, Token, Experiment
 # * sign in, generate a token, email that token: they have to access all their
 #   experiments from that tokenized page: prevents other students look at each
 #   others experiments.
-# * factors is a variable, so you can have unlimited number of factors
-# * PDF download link (using ReportLab to create the PDF)
-# * Base-line as a variable
+# * factors are in a Django, so you can have unlimited number of factors, rename them
+#   in one place, set limits, center points (if required), etc
 
 # Experimental conditions
 # ===============================
 # Baseline and limits
-baseline_xA = 90.0
-baseline_xB = 45.0
+baseline_xA = 92.0
+baseline_xB = 46.0
 baseline_xC = 'Low'
 limits_A = [80, 120]
 limits_B = [30, 60]
