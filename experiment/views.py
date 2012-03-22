@@ -189,7 +189,7 @@ def plot_results(expts, the_student):
     ax = fig.add_axes(rect, frameon=True)
     ax.set_title('Response surface: experiments performed', fontsize=16)
     ax.set_xlabel('Reaction temperature [C]', fontsize=16)
-    ax.set_ylabel('Contact time [min]', fontsize=16)
+    ax.set_ylabel('Duration [min]', fontsize=16)
 
     if show_result:
         r = 70         # resolution of surface
@@ -477,7 +477,7 @@ def download_csv(request, token):
     response = HttpResponse(mimetype='text/csv')
     response['Content-Disposition'] = 'attachment; filename=takehome-2011-group-' + the_student.student_number + '-' + token + '.csv'
     writer = csv.writer(response)
-    writer.writerow(['Number', 'DateTime', 'Reactor temperature [C]', 'Contact time [min]', 'NaCl concentration', 'Profit [c/kg]'])
+    writer.writerow(['Number', 'DateTime', 'Reactor temperature [C]', 'Duration [min]', 'NaCl concentration', 'Profit [c/kg]'])
     #writer.writerow(['0','Baseline','93.0','50.0','Low','63.5'])
     for expt in prev_expts:
         writer.writerow([str(expt['number']),
@@ -517,7 +517,7 @@ def download_pdf(request, token):
     frameWidth = W - (LMARGIN + RMARGIN)
     frameHeight = H - (TMARGIN + BMARGIN+30*mm)
     frame = Frame(LMARGIN, BMARGIN, frameWidth, frameHeight, showBoundary=0)
-    table_data = [['Run', 'Date/Time of experiment', 'Reaction temperature [C]', 'Contact time [min]', 'NaCl concentration', 'Profit [c/kg]']]
+    table_data = [['Run', 'Date/Time of experiment', 'Reaction temperature [C]', 'Duration [min]', 'NaCl concentration', 'Profit [c/kg]']]
 
     prev_expts = get_experiment_list(the_student)
     for expt in prev_expts:

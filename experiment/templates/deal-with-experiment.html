@@ -51,12 +51,12 @@ function validate_factor_B(factor_B)
 	var valid = new Boolean(false);
 	if (factor_B >= 30 && factor_B <= 60){
 		value=true;
-		document.getElementById("factor_B_constraint").innerHTML = 'Contact constraint: OK';
+		document.getElementById("factor_B_constraint").innerHTML = 'Duration constraint: OK';
 		document.getElementById("factor_B_constraint").className = "constraint_OK";
 	}
 	else
 	{
-		document.getElementById("factor_B_constraint").innerHTML = 'Contact time constraint: violated';
+		document.getElementById("factor_B_constraint").innerHTML = 'Duration constraint: violated';
 		document.getElementById("factor_B_constraint").className = "constraint_violated";
 	}
 	check_joint_constraint(document.getElementById("factor_A_input").value, factor_B)
@@ -99,7 +99,7 @@ Generate the next experiment at the following conditions:
 			<td width="400"><span id="factor_A_constraint" class="constraint_colour"></span></td>
 		</tr>
 		<tr>
-			<td>Contact time:</td>
+			<td>Duration:</td>
 			<td><input id="factor_B_input" type="text" name="factor_B" maxlength="7" size="7" onkeyup="validate_factor_B(this.value)"/> min</td>
 			<td width="400"><span id="factor_B_constraint" class="constraint_colour"></span></td>
         </tr>
@@ -125,7 +125,7 @@ Generate the next experiment at the following conditions:
     <th>Experiment number</th>
     <th>Date and time</th>
     <th>Reaction temperature [°C]</th>
-    <th>Contact time [min]</th>
+    <th>Duration [min]</th>
     <th>NaCl concentration</th>
     <th>Profit [c/kg]</th>
     </tr>
