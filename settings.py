@@ -2,7 +2,7 @@
 import os
 this_dir = __file__[0:__file__.find('settings.py')]
 
-DEBUG = True
+DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
@@ -41,13 +41,7 @@ USE_I18N = True
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
-if DEBUG:
-    MEDIA_ROOT = this_dir + 'media' + os.sep
-else:
-    # For production: you'll want to copy the <base>/media/* files to your
-    # static location and modify this path to match your server.
-    MEDIA_ROOT = '/home/kevindunn/django-projects/rsm/media/'
-
+MEDIA_ROOT = this_dir + 'media' + os.sep
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
