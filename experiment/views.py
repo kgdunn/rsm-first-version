@@ -34,8 +34,8 @@ from numpy.lib import scimath as SM
 
 # Settings
 token_length = 12
-max_experiments_allowed = 20
-show_result = True
+max_experiments_allowed = 25
+show_result = False
 
 # Command line use
 #import sys, os
@@ -60,7 +60,7 @@ baseline_xB = 35.0
 baseline_xC = 'Low'
 limits_A = [80, 120]
 limits_B = [30, 60]
-time_delay = datetime.timedelta(0, 90)  # 1.5*60*60 # time delay in seconds between experiments
+time_delay = datetime.timedelta(0, 1.5*60*60) # time delay in seconds between experiments
 
 # Start and end point of the linear constraint region
 # constraint equation: x+y=2 (in scaled units)
@@ -129,7 +129,7 @@ def generate_result(the_student, factors, num_runs=0, pure_response=False):
     # problem statement
     x1, x2 = x2, x1
     x2 = -x2
-    z_num = 10.2*x1 + 5.6*x2 - 4.9*x1**2 - 3*x2**2 - 12.6*x1*x2
+    z_num = 10.2*x1 + 5.6*x2 - 2.9*x1**2 - 3*x2**2 - 12.6*x1*x2
     z_den = (0.1*x1**2 + 0.5*x2**2 + 1)**2
 
 
@@ -499,7 +499,11 @@ def download_pdf(request, token):
     token_item = Token.objects.filter(token_string=token)
     the_student = token_item[0].student
     my_logger.debug('Generating PDF file for token = ' + str(token) + '; student number = ' + the_student.student_number)
+<<<<<<< local
+    PDF_filename = 'takehome-group-%s-%s.pdf' % (the_student.student_number, token)
+=======
     PDF_filename = 'takehome-2012-group-%s-%s.pdf' % (the_student.student_number, token)
+>>>>>>> other
 
     response = HttpResponse(mimetype='application/pdf')
     response['Content-Disposition'] = 'attachment; filename=%s' % PDF_filename
