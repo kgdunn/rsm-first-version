@@ -2,7 +2,7 @@
 import os
 this_dir = __file__[0:__file__.find('settings.py')]
 
-DEBUG = False
+DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
