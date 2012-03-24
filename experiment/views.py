@@ -35,7 +35,7 @@ from numpy.lib import scimath as SM
 # Settings
 token_length = 12
 max_experiments_allowed = 20
-show_result = True
+show_result = False
 
 # Command line use
 #import sys, os
