@@ -91,7 +91,7 @@ function validate_factor_B(factor_B)
 <h2>The next experiment</h2>
 
 Generate the next experiment at the following conditions:
-<form action="/take-home-final/run-experiment-{{Settings.token}}/" method="POST" enctype="multipart/form-data">
+<form action="/run-experiment-{{Settings.token}}/" method="POST" enctype="multipart/form-data">
 	<table class="data-entry-table">
 		<tr>
 			<td>Reaction temperature:</td>
@@ -119,7 +119,7 @@ Generate the next experiment at the following conditions:
 <hr>
 <h2>Previous experiments run</h2>
 
-<a href="/take-home-final/download-csv-{{Settings.token}}/">Download data</a> | <a href="/take-home-final/download-pdf-{{Settings.token}}/">Download report</a>
+<a href="/download-csv-{{Settings.token}}/">Download data</a> | <a href="/download-pdf-{{Settings.token}}/">Download report</a>
 <table class="prev-expts-table">
     <tr>
     <th>Experiment number</th>

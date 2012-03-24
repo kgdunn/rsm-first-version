@@ -4,12 +4,12 @@ from django.conf import settings
 
 
 urlpatterns = patterns('',
-    (r'take-home-final^$', views.sign_in),
-    (r'^take-home-final/$', views.sign_in),
-    (r'^take-home-final/not-registered$', views.not_registered_student),
-    (r'^take-home-final/run-experiment-(.*)/', views.run_experiment),
-    (r'^take-home-final/download-csv-(.*)/', views.download_csv),
-    (r'^take-home-final/download-pdf-(.*)/', views.download_pdf),
+    (r'^$', views.sign_in),
+    (r'^/$', views.sign_in),
+    (r'^not-registered$', views.not_registered_student),
+    (r'^run-experiment-(.*)/', views.run_experiment),
+    (r'^download-csv-(.*)/', views.download_csv),
+    (r'^download-pdf-(.*)/', views.download_pdf),
 )
 
 

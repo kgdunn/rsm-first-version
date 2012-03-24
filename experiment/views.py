@@ -55,11 +55,12 @@ from rsm.experiment.models import Student, Token, Experiment
 # Experimental conditions
 # ===============================
 # Baseline and limits
-baseline_xA = 94.0
-baseline_xB = 36.0
+baseline_xA = 98.0
+baseline_xB = 35.0
 baseline_xC = 'Low'
 limits_A = [80, 120]
 limits_B = [30, 60]
+time_delay = datetime.timedelta(0, 90)  # 1.5*60*60 # time delay in seconds between experiments
 
 # Start and end point of the linear constraint region
 # constraint equation: x+y=2 (in scaled units)
@@ -99,7 +100,7 @@ def generate_random_token():
 
     return ''.join([random.choice('ABCEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz2345689') for i in range(token_length)])
 
-def generate_result(the_student, factors, bias, pure_response=False):
+def generate_result(the_student, factors, num_runs=0, pure_response=False):
     """
     Generates an experimental result for the student.
     The first error added is always the same, the second error
@@ -147,14 +148,17 @@ def generate_result(the_student, factors, bias, pure_response=False):
     # y = (phi * y) + 0.5*x1 + (-0.50*x1**2)*x3s
     # y = np.real(y) * 2.0 + offset
 
-    y = np.real(z_num/z_den) + the_student.offset
+    # Offset of +50c/kg up, but drop off by 2c/kg for using high concentration
+    y = np.real(z_num/z_den)*2.0 + the_student.offset + 50.0 - 0.05 *x2s - x3s
 
     if pure_response:
         y_noisy = y
     else:
         np.random.seed(int(the_student.student_number))
         noise_sd = 0.009 * np.abs(np.max(y)) + 0.001
-        y_noisy = y + np.random.normal(loc=0.0, scale=noise_sd) + np.random.normal(loc=0.0, scale=noise_sd, size=bias)[-1]
+        y_noisy = y + np.random.normal(loc=0.0, scale=noise_sd) + np.random.normal(loc=0.0, scale=noise_sd, size=num_runs)[-1]
+        # Add a slow decay in the response with time:
+        y_noisy = y_noisy - num_runs/6.0
 
     return (y, y_noisy)
 
@@ -198,15 +202,15 @@ def plot_results(expts, the_student):
         X3_hi = 1.0
 
         X1, X2 = np.meshgrid(x1, x2)
-        Y_lo, Y_lo_noisy = generate_result(the_student, (X1, X2, X3_lo), 1, pure_response=True)
-        Y_hi, Y_hi_noisy = generate_result(the_student, (X1, X2, X3_hi), 1, pure_response=True)
+        Y_lo, Y_lo_noisy = generate_result(the_student, (X1, X2, X3_lo), pure_response=True)
+        Y_hi, Y_hi_noisy = generate_result(the_student, (X1, X2, X3_hi), pure_response=True)
 
-        levels_lo = np.linspace(0.0, 100, 51) # np.array(50, 55, 60, 65, 70, 75, 80, 85, 90])
-        levels_hi = np.linspace(1.0, 101, 51)
-        CS_lo = ax.contour(X1, X2, Y_lo, colors='#000000', levels=levels_lo, linestyles='solid', linewidths=1)
-        CS_hi = ax.contour(X1, X2, Y_hi, colors='#FF0000', levels=levels_hi, linestyles='dotted', linewidths=1)
+        levels_lo = np.linspace(0.0, 100, 25) # np.array(50, 55, 60, 65, 70, 75, 80, 85, 90])
+        #levels_hi = np.linspace(1.0, 101, 51)
+        CS_lo = ax.contour(X1, X2, Y_lo, colors='#777777', levels=levels_lo, linestyles='solid', linewidths=1)
+        #CS_hi = ax.contour(X1, X2, Y_hi, colors='#FF0000', levels=levels_hi, linestyles='dotted', linewidths=1)
         ax.clabel(CS_lo, inline=1, fontsize=10, fmt='%1.0f' )
-        ax.clabel(CS_hi, inline=1, fontsize=10, fmt='%1.0f' )
+        #ax.clabel(CS_hi, inline=1, fontsize=10, fmt='%1.0f' )
 
     # Plot constraint
     ax.plot([constraint_a[0], constraint_b[0]], [constraint_a[1], constraint_b[1]], color="#EA8700", linewidth=2)
@@ -263,7 +267,7 @@ def sign_in(request):
             the_student = Student.objects.get(student_number=form_student_number)
         except Student.DoesNotExist:
             # If student number not in list, tell them they are not registered
-            return HttpResponseRedirect('/take-home-final/not-registered')
+            return HttpResponseRedirect('/not-registered')
         else:
             return setup_experiment(request, the_student)
 
@@ -279,17 +283,19 @@ def get_experiment_list(the_student):
     prev_expts = []
     counter = 1
     for item in Experiment.objects.select_related().filter(student=the_student.student_number):
-        # Time between experiments: 1.5 hours
+
+        ## Time between experiments: 1.5 hours
+        #delay_seconds = 90 # 1.5*60*60  # given in seconds
         #now = datetime.datetime.now()
-        #delta = datetime.timedelta(0, 1.5*60*60)
+        #delta = datetime.timedelta(0, delay_seconds)
 
         #if (now - item.date_time) < delta:
-        #    diff = now+delta
-        #    prev_expts.append({'factor_A': item.factor_A, 'factor_B': item.factor_B, 'factor_C': item.factor_C,
-        #                'response': 'Delayed till %s' % diff.strftime("%d %B, %H:%m") , 'date_time': item.date_time, 'number': counter})
+            #diff = now+delta
+            #prev_expts.append({'factor_A': item.factor_A, 'factor_B': item.factor_B, 'factor_C': item.factor_C,
+                        #'response': 'Delayed till %s' % diff.strftime("%d %B, %H:%m") , 'date_time': item.date_time, 'number': counter})
         #else:
         prev_expts.append({'factor_A': item.factor_A, 'factor_B': item.factor_B, 'factor_C': item.factor_C,
-                           'response': item.response_noisy, 'date_time': item.date_time, 'number': counter})
+                            'response': item.response_noisy, 'date_time': item.date_time, 'number': counter})
         counter += 1
     return prev_expts
 
@@ -341,7 +347,6 @@ def setup_experiment(request, the_student):
     We can assume the student is already registered.
     """
     my_logger.debug('About to run experiment for student = ' + str(the_student.student_number))
-    #the_student = Student.objects.get(student_number=student_number)
     return render_next_experiment(the_student)
 
 def report_invalid_factors(student_number):
@@ -429,23 +434,24 @@ def run_experiment(request, token):
         c = Context({})
         return HttpResponse(t.render(c))
 
+    response, response_noisy = generate_result(the_student, [factor_A, factor_B, factor_C], num_runs=the_student.runs_used_so_far+1)
 
-    response, response_noisy = generate_result(the_student, [factor_A, factor_B, factor_C], bias=the_student.runs_used_so_far+1)
-
-    # Time between experiments: 1.5 hours
+    # Check the time between experiments:
     now = datetime.datetime.now()
-    delta = datetime.timedelta(0, 1.5*60*60)
     last_run = datetime.datetime(1, 1, 1)
     for item in Experiment.objects.filter(student=the_student.student_number):
         if item.date_time > last_run:
             last_run = item.date_time
 
+    if (now - last_run) < time_delay:
+        #time_done = last_run + delta
+        my_logger.debug('Experiments too close from student ' + student_number)
+        t = loader.get_template("too-close-in-time.html")
+        c = Context({})
+        return HttpResponse(t.render(c))
 
-    if (now - last_run) < delta:
-        time_done = last_run + delta
     else:
         time_done = now
-
 
     expt = Experiment.objects.get_or_create(student=the_student,
                                             factor_A=factor_A,
