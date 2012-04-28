@@ -34,7 +34,7 @@ from numpy.lib import scimath as SM
 
 # Settings
 token_length = 12
-max_experiments_allowed = 25
+max_experiments_allowed = 0
 show_result = False
 
 # Command line use
@@ -60,7 +60,7 @@ baseline_xB = 35.0
 baseline_xC = 'Low'
 limits_A = [80, 120]
 limits_B = [30, 60]
-time_delay = datetime.timedelta(0, 1.5*60*60) # time delay in seconds between experiments
+time_delay = datetime.timedelta(0, 0*30*60) # time delay in seconds between experiments
 
 # Start and end point of the linear constraint region
 # constraint equation: x+y=2 (in scaled units)
@@ -149,7 +149,7 @@ def generate_result(the_student, factors, num_runs=0, pure_response=False):
     # y = np.real(y) * 2.0 + offset
 
     # Offset of +50c/kg up, but drop off by 2c/kg for using high concentration
-    y = np.real(z_num/z_den)*2.0 + the_student.offset + 50.0 - 0.05 *x2s - x3s
+    y = np.real(z_num/z_den)*2.0 + the_student.offset/4.0 + 50.0 - 0.05 *x2s - x3s
 
     if pure_response:
         y_noisy = y
@@ -217,7 +217,7 @@ def plot_results(expts, the_student):
 
     # Baseline marker and label
     ax.text(baseline_xA, baseline_xB, "    Baseline", horizontalalignment='left', verticalalignment='center', color="#0000FF")
-    ax.plot(baseline_xA, baseline_xB, 'k.', linewidth=2, ms=20)
+    ax.plot(baseline_xA, baseline_xB, 'r.', linewidth=2, ms=20)
 
     for idx, entry_A in enumerate(factor_A):
         if factor_C[idx] == 'Low':
@@ -321,10 +321,11 @@ def render_next_experiment(the_student):
         response.append(entry['response'])
     highest_profit = np.max(response)
     #my_logger.debug('Profit = ' + str(highest_profit))
-    max_profit = -10
-    baseline = 63.5
-    student['profit_bonus'] =  3.0 * (highest_profit - baseline) / (max_profit - baseline)
-    student['runs_bonus'] = -0.25 * the_student.runs_used_so_far + 5.0
+
+    #5.0×Your optimum−BaselineTrue optimum−Baseline−0.25N+3.0
+    student['baseline'] = the_student.offset/4.0 + 43.0
+    student['max_profit'] = the_student.offset/4.0 + 63.0
+    student['profit_bonus'] = np.round(5.0 * (highest_profit - student['baseline']) / (student['max_profit'] - student['baseline'])- 0.25*the_student.runs_used_so_far + 3.0, 1)
 
     # Generate a picture of previous experiments
     filename = plot_results(prev_expts, the_student)
@@ -499,11 +500,7 @@ def download_pdf(request, token):
     token_item = Token.objects.filter(token_string=token)
     the_student = token_item[0].student
     my_logger.debug('Generating PDF file for token = ' + str(token) + '; student number = ' + the_student.student_number)
-<<<<<<< local
     PDF_filename = 'takehome-group-%s-%s.pdf' % (the_student.student_number, token)
-=======
-    PDF_filename = 'takehome-2012-group-%s-%s.pdf' % (the_student.student_number, token)
->>>>>>> other
 
     response = HttpResponse(mimetype='application/pdf')
     response['Content-Disposition'] = 'attachment; filename=%s' % PDF_filename

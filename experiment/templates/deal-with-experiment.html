@@ -44,7 +44,7 @@ function validate_factor_A(factor_A)
 		document.getElementById("factor_A_constraint").innerHTML = 'Temperature constraint: violated';
 		document.getElementById("factor_A_constraint").className = "constraint_violated";
 	}
-	check_joint_constraint(factorA, document.getElementById("factor_B_input").value)
+	check_joint_constraint(document.getElementById("factor_A_input").value, document.getElementById("factor_B_input").value)
 }
 function validate_factor_B(factor_B)
 {
@@ -59,7 +59,7 @@ function validate_factor_B(factor_B)
 		document.getElementById("factor_B_constraint").innerHTML = 'Duration constraint: violated';
 		document.getElementById("factor_B_constraint").className = "constraint_violated";
 	}
-	check_joint_constraint(document.getElementById("factor_A_input").value, factor_B)
+	check_joint_constraint(document.getElementById("factor_A_input").value,document.getElementById("factor_B_input").value )
 }
 </script>
 
@@ -77,6 +77,19 @@ function validate_factor_B(factor_B)
         <tr>
                 <td>Contact email address:</td>
                 <td>{{Student.email}}</td>
+        </tr>
+{{Student.runs_bonus}}
+        <tr>
+                <td>Baseline profit:</td>
+                <td>{{Student.baseline}} [c/kg]</td>
+        </tr>
+        <tr>
+                <td>Maximum profit:</td>
+                <td>{{Student.max_profit}} [c/kg]</td>
+        </tr>
+        <tr>
+                <td>Grades bonus:</td>
+                <td>{{Student.profit_bonus}} </td>
         </tr>
         <tr>
                 <td>Experiments used so far:</td>
