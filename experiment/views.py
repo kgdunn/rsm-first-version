@@ -501,7 +501,6 @@ def download_pdf(request, token):
     the_student = token_item[0].student
     my_logger.debug('Generating PDF file for token = ' + str(token) + '; student number = ' + the_student.student_number)
     PDF_filename = 'takehome-group-%s-%s.pdf' % (the_student.student_number, token)
-
     response = HttpResponse(mimetype='application/pdf')
     response['Content-Disposition'] = 'attachment; filename=%s' % PDF_filename
 
