@@ -34,8 +34,13 @@ from numpy.lib import scimath as SM
 
 # Settings
 token_length = 12
+<<<<<<< local
+max_experiments_allowed = 25
+show_result = True
+=======
 max_experiments_allowed = 0
 show_result = False
+>>>>>>> other
 
 # Command line use
 #import sys, os
@@ -205,7 +210,7 @@ def plot_results(expts, the_student):
         Y_lo, Y_lo_noisy = generate_result(the_student, (X1, X2, X3_lo), pure_response=True)
         Y_hi, Y_hi_noisy = generate_result(the_student, (X1, X2, X3_hi), pure_response=True)
 
-        levels_lo = np.linspace(0.0, 100, 25) # np.array(50, 55, 60, 65, 70, 75, 80, 85, 90])
+        levels_lo = np.linspace(-25, 100, 51) # np.array(50, 55, 60, 65, 70, 75, 80, 85, 90])
         #levels_hi = np.linspace(1.0, 101, 51)
         CS_lo = ax.contour(X1, X2, Y_lo, colors='#777777', levels=levels_lo, linestyles='solid', linewidths=1)
         #CS_hi = ax.contour(X1, X2, Y_hi, colors='#FF0000', levels=levels_hi, linestyles='dotted', linewidths=1)
