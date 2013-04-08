@@ -58,12 +58,9 @@ from experiment.models import Student, Token, Experiment
 # Experimental conditions
 # ===============================
 # Baseline and limits
-#baseline_xA = 98.0
-#baseline_xB = 35.0
-#baseline_xC = 'Low'
 limits_A = [2.0, 6.5]
 limits_B = [15, 34]
-time_delay = datetime.timedelta(0, 0*30*60) # time delay in seconds between experiments
+time_delay = datetime.timedelta(0, 0*60) # time delay in seconds between experiments
 
 # Start and end point of the linear constraint region
 # constraint equation: x+y=2 (in scaled units)
@@ -117,24 +114,33 @@ def generate_result(the_student, factors, num_runs=0, pure_response=False):
 
     my_logger.debug('Generating a new experimental result for student number ' + the_student.student_number)
 
-    x1off = (85+120)/2.0    # midpoint
-    x1scale = (120-85)/6.0  # a range of 6 units from low to high
-    x1 = np.array((np.array(x1s) - x1off)/(x1scale+0.0))
+    x1off = (2+6.5)/2.0    # midpoint
+    x1scale = (6.5-2)/6.0  # a range of 6 units from low to high
+    x1s = np.array((np.array(x1s) - x1off)/(x1scale+0.0))
 
-    x2off = (50+30)/2.0     #
-    x2scale = (50-30)/6.0
-    x2 = np.array((np.array(x2s) - x2off)/(x2scale+0.0))
+    x2off = (15+34)/2.0     #
+    x2scale = (34-15)/6.0
+    x2s = np.array((np.array(x2s) - x2off)/(x2scale+0.0))
 
+    # 2013 objective function
+    # Apply rotation
+    r = the_student.rotation * np.pi / 180.0
+    x1 = x1s * np.cos(r)  -  x2s * np.sin(r)
+    x2 = x1s * np.sin(r)  +  x2s * np.cos(r)
+    num = 10.2*x1 + 5.6*x2 - 5.9*x3s**2 - 3*x2**2 - 12.6*x1*x2
+    den = (0.1*x1**2 + 0.5*x2**2+ 1)**2
+    y = 50 * np.real(num)/np.real(den) + 444 + the_student.offset
 
     # 2012 objective function
     # -----------------------
     # Switch x1 and x2 around: makes more sense in the contect of the 2012
     # problem statement
-    x1, x2 = x2, x1
-    x2 = -x2
-    z_num = 10.2*x1 + 5.6*x2 - 2.9*x1**2 - 3*x2**2 - 12.6*x1*x2
-    z_den = (0.1*x1**2 + 0.5*x2**2 + 1)**2
-
+    #x1, x2 = x2, x1
+    #x2 = -x2
+    #z_num = 10.2*x1 + 5.6*x2 - 2.9*x1**2 - 3*x2**2 - 12.6*x1*x2
+    #z_den = (0.1*x1**2 + 0.5*x2**2 + 1)**2
+    # Offset of +50c/kg up, but drop off by 2c/kg for using high concentration
+    # y = np.real(z_num/z_den)*2.0 + the_student.offset/4.0 + 50.0 - 0.05 *x2s - x3s
 
     # 2011 objective function
     # ------------------------
@@ -151,19 +157,41 @@ def generate_result(the_student, factors, num_runs=0, pure_response=False):
     # y = (phi * y) + 0.5*x1 + (-0.50*x1**2)*x3s
     # y = np.real(y) * 2.0 + offset
 
-    # Offset of +50c/kg up, but drop off by 2c/kg for using high concentration
-    y = np.real(z_num/z_den)*2.0 + the_student.offset/4.0 + 50.0 - 0.05 *x2s - x3s
-
     if pure_response:
         y_noisy = y
     else:
         np.random.seed(int(the_student.student_number))
-        noise_sd = 0.009 * np.abs(np.max(y)) + 0.001
-        y_noisy = y + np.random.normal(loc=0.0, scale=noise_sd) + np.random.normal(loc=0.0, scale=noise_sd, size=num_runs)[-1]
+        noise_sd = 0.05 * np.abs(np.max(y))
+        y_noisy = y + np.random.normal(loc=0.0, scale=noise_sd)
         # Add a slow decay in the response with time:
         y_noisy = y_noisy - num_runs/6.0
 
     return (y, y_noisy)
+
+def transform_coords(x1, x2, rot):
+    """
+    Scale the real-world units to coded units; rotate; then unscale back.
+    """
+    x1 = 3.5
+    x2 = 24.0
+
+    x1off = (2+6.5)/2.0    # midpoint
+    x1scale = (6.5-2)/6.0  # a range of 6 units from low to high
+    x1s = np.array((np.array(x1) - x1off)/(x1scale+0.0))
+
+    x2off = (15+34)/2.0     #
+    x2scale = (34-15)/6.0
+    x2s = np.array((np.array(x2) - x2off)/(x2scale+0.0))
+
+    r = rot * np.pi / 180.0
+    x1rs = x1s * np.cos(r) - x2s * np.sin(r)
+    x2rs = x1s * np.sin(r) + x2s * np.cos(r)
+
+    # The unscale back to original units
+    x1r = x1rs * x1scale + x1off
+    x2r = x2rs * x2scale + x2off
+
+    return x1r, x2r
 
 def plot_results(expts, the_student):
     """Plots the data into a PNG figure file"""
@@ -202,39 +230,53 @@ def plot_results(expts, the_student):
         r = 70         # resolution of surface
         x1 = np.arange(limits_A[0], limits_A[1], step=(limits_A[1] - limits_A[0])/(r+0.0))
         x2 = np.arange(limits_B[0], limits_B[1], step=(limits_B[1] - limits_B[0])/(r+0.0))
-        X3_lo = 0.0
-        X3_hi = 1.0
+        X3_lo = 'Z'
+        X3_hi = 'Q'
 
         X1, X2 = np.meshgrid(x1, x2)
-        Y_lo, Y_lo_noisy = generate_result(the_student, (X1, X2, X3_lo), pure_response=True)
-        Y_hi, Y_hi_noisy = generate_result(the_student, (X1, X2, X3_hi), pure_response=True)
+        Y_lo, Y_lo_noisy = generate_result(the_student, (X1, X2, X3_lo),
+                                           pure_response=True)
+        Y_hi, Y_hi_noisy = generate_result(the_student, (X1, X2, X3_hi),
+                                           pure_response=True)
 
-        levels_lo = np.linspace(-25, 100, 51) # np.array(50, 55, 60, 65, 70, 75, 80, 85, 90])
-        #levels_hi = np.linspace(1.0, 101, 51)
-        CS_lo = ax.contour(X1, X2, Y_lo, colors='#777777', levels=levels_lo, linestyles='solid', linewidths=1)
-        #CS_hi = ax.contour(X1, X2, Y_hi, colors='#FF0000', levels=levels_hi, linestyles='dotted', linewidths=1)
+        levels_lo = np.linspace(-25, 100, 51)*100
+        levels_hi = np.linspace(-25, 101, 51)*100
+        CS_lo = ax.contour(X1, X2, Y_lo, colors='#777777', levels=levels_lo,
+                           linestyles='solid', linewidths=1)
+        CS_hi = ax.contour(X1, X2, Y_hi, colors='#FF0000', levels=levels_hi,
+                           linestyles='dotted', linewidths=1)
         ax.clabel(CS_lo, inline=1, fontsize=10, fmt='%1.0f' )
-        #ax.clabel(CS_hi, inline=1, fontsize=10, fmt='%1.0f' )
+        ax.clabel(CS_hi, inline=1, fontsize=10, fmt='%1.0f' )
 
     # Plot constraint
     #ax.plot([constraint_a[0], constraint_b[0]], [constraint_a[1], constraint_b[1]], color="#EA8700", linewidth=2)
 
-    # Baseline marker and label
-    #ax.text(baseline_xA, baseline_xB, "    Baseline", horizontalalignment='left', verticalalignment='center', color="#0000FF")
-    #ax.plot(baseline_xA, baseline_xB, 'r.', linewidth=2, ms=20)
+    baseline_xA, baseline_xB = transform_coords(x1=3.5, x2=24,
+                                                rot=the_student.rotation)
+    my_logger.debug('Baseline [%s] = (%s, %s)' % (the_student.student_number,
+                                                  baseline_xA, baseline_xB))
+
+    # Baseline marker and label.
+    ax.text(baseline_xA, baseline_xB, "    Baseline",
+            horizontalalignment='left', verticalalignment='center',
+            color="#0000FF")
+    ax.plot(baseline_xA, baseline_xB, 'r.', linewidth=2, ms=20)
 
     for idx, entry_A in enumerate(factor_A):
+        xA, xB = transform_coords(x1=entry_A, x2= factor_B[idx],
+                                  rot=the_student.rotation)
+
         if factor_C[idx] == 'Z':
-            ax.plot(entry_A, factor_B[idx], 'k.', ms=20)
+            ax.plot(xA, xB, 'k.', ms=20)
         else:
-            ax.plot(entry_A, factor_B[idx], 'r.', ms=20)
-        ax.text(entry_A+dx, factor_B[idx]+dy, str(idx+1))
+            ax.plot(xA, xB, 'r.', ms=20)
+        ax.text(xA+dx, xB+dy, str(idx+1))
 
-    ax.plot(107, 57, 'k.', ms=20)
-    ax.text(108, 57, 'Impeller Z', va='center', ha='left')
+    #ax.plot(107, 57, 'k.', ms=20)
+    #ax.text(108, 57, 'Impeller Z', va='center', ha='left')
 
-    ax.plot(107, 59, 'r.', ms=20)
-    ax.text(108, 59, 'Impeller Q', va='center', ha='left')
+    #ax.plot(107, 59, 'r.', ms=20)
+    #ax.text(108, 59, 'Impeller Q', va='center', ha='left')
 
     ax.set_xlim(limits_A)
     ax.set_ylim(limits_B)
@@ -356,9 +398,6 @@ def render_next_experiment(request, the_student):
     return render_to_response('deal-with-experiment.html', ctxdict,
                                  context_instance=RequestContext(request))
 
-
-    #return HttpResponse(t.render(c))
-
 def setup_experiment(request, the_student):
     """
     Returns the web-page where the student can request a new experiment.
@@ -405,14 +444,22 @@ def run_experiment(request, token):
     else:
         my_logger.debug('factor_A = '+ str(factor_A) + '; factor_B = ' + str(factor_B) + '; factor_C = ' + str(factor_C))
 
+    # Check if the user has enough experiments remaining
+    if the_student.runs_used_so_far >= max_experiments_allowed:
+        # Used token
+        my_logger.debug('Limit reached for student number ' + student_number)
+        t = loader.get_template("experiment-limit-reached.html")
+        c = Context({})
+        return HttpResponse(t.render(c))
+
     # Check constraints:
     satisfied = True
+
+    # 2011
     #if factor_A > 120.0 or factor_A < 80.0:
     #    satisfied = False
     #if factor_B > 60.0 or factor_B < 30.0:
     #    satisfied = False
-
-    # 2011
     # m = (36.6666666666666667-50.0)/(480.0 - 450.0)
     # c = 50.0 - m * 450.0
 
@@ -422,17 +469,15 @@ def run_experiment(request, token):
     #if factor_A*m + c < factor_B:    # predicted_B > actual_B: then you are in the constraint region
     #    satisfied = False
 
+    # 2013
+    if (factor_A > 6.5) or (factor_A < 2.0):
+        satisfied = False
+    if (factor_B > 34.0) or (factor_B < 15.0):
+        satisfied = False
+
     if not satisfied:
         my_logger.debug('Invalid values for factors received from student ' + student_number)
         t = loader.get_template("invalid-factor-values.html")
-        c = Context({})
-        return HttpResponse(t.render(c))
-
-    # Check if the user has enough experiments remaining
-    if the_student.runs_used_so_far >= max_experiments_allowed:
-        # Used token
-        my_logger.debug('Limit reached for student number ' + student_number)
-        t = loader.get_template("experiment-limit-reached.html")
         c = Context({})
         return HttpResponse(t.render(c))
 
@@ -455,21 +500,22 @@ def run_experiment(request, token):
     response, response_noisy = generate_result(the_student, [factor_A, factor_B, factor_C], num_runs=the_student.runs_used_so_far+1)
 
     # Check the time between experiments:
-    now = datetime.datetime.now()
-    last_run = datetime.datetime(1, 1, 1)
+    from django.utils.timezone import now, make_aware, get_current_timezone
+    last_run = make_aware(datetime.datetime(2000, 1, 1), get_current_timezone())
     for item in Experiment.objects.filter(student=the_student.student_number):
         if item.date_time > last_run:
             last_run = item.date_time
 
-    if (now - last_run) < time_delay:
+    if (now() - last_run) < time_delay:
         #time_done = last_run + delta
         my_logger.debug('Experiments too close from student ' + student_number)
         t = loader.get_template("too-close-in-time.html")
-        c = Context({})
+        c = Context({'difference': int(np.ceil((time_delay - (now() - \
+                                                last_run )).seconds/60.0))})
         return HttpResponse(t.render(c))
 
     else:
-        time_done = now
+        time_done = now()
 
     expt = Experiment.objects.get_or_create(student=the_student,
                                             factor_A=factor_A,

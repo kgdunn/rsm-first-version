@@ -1,9 +1,8 @@
 {% extends "base_page.html" %}
 
 {% block content %}
-<p>Sorry - there is a time delay between experiments.
+<p>Sorry - there is a time delay between experiments. You have to wait about <b>{{difference}} minute{{ difference|pluralize }}</b> before you can run your next experiment.
 <p>In practice, this would be the time require to set up and run the experiment, followed by cleaning for the next experiment.
 <p>This has not affected your allocated number of experiments.  <a href="/rsm/">Click here to return</a>.
-
 {% endblock %}
 
