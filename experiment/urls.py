@@ -1,5 +1,5 @@
 from django.conf.urls.defaults import *
-from rsm.experiment import views
+from experiment import views
 from django.conf import settings
 
 

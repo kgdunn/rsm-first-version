@@ -2,22 +2,21 @@ from django.db import models
 
 class Student(models.Model):
     first_name = models.CharField(max_length=250)
-    last_name = models.CharField(max_length=250)
     student_number = models.CharField(max_length=7, unique=True, primary_key=True)
     email_address = models.EmailField()
-    grad_student = models.BooleanField()
     runs_used_so_far = models.IntegerField(default=0)
     offset = models.FloatField()
+    rotation = models.FloatField()
 
 
     def __unicode__(self):
-        return u'%s %s, %i, 400=%s' % (self.first_name, self.last_name, self.runs_used_so_far, str(not self.grad_student))
+        return u'%s: %i' % (self.first_name, self.runs_used_so_far)
 
 class Experiment(models.Model):
 
     factor_C_choice = (
-            ('Low', u'Low concentration NaCl'),
-            ('High', u'High concentration NaCl'),
+            ('Z', u'Impeller Z'),
+            ('Q', u'Impeller Q'),
             )
 
     student = models.ForeignKey(Student)

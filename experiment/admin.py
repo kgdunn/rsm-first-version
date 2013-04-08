@@ -7,7 +7,7 @@ class TokenAdmin(admin.ModelAdmin):
 
 class StudentAdmin(admin.ModelAdmin):
     list_per_page = 200
-    list_display = ('first_name', 'student_number', 'email_address', 'grad_student', 'runs_used_so_far', 'offset')
+    list_display = ('first_name', 'student_number', 'email_address', 'runs_used_so_far', 'offset', 'rotation')
 
 class ExptAdmin(admin.ModelAdmin):
     list_per_page = 3000

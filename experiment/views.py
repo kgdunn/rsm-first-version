@@ -5,10 +5,11 @@
 from django.template import loader, Context
 from django.http import HttpResponseRedirect, HttpResponse
 from django.conf import settings as DJANGO_SETTINGS
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, RequestContext
 from django.contrib.auth.decorators import login_required
 from django.contrib import auth
 from django.contrib.auth.models import User
+from django.core.context_processors import csrf
 
 # Built-in imports
 import csv
@@ -34,13 +35,9 @@ from numpy.lib import scimath as SM
 
 # Settings
 token_length = 12
-<<<<<<< local
 max_experiments_allowed = 25
 show_result = True
-=======
-max_experiments_allowed = 0
-show_result = False
->>>>>>> other
+
 
 # Command line use
 #import sys, os
@@ -56,21 +53,22 @@ from rsm.experiment.models import Student, Token, Experiment
 #   others experiments.
 # * factors are in a Django, so you can have unlimited number of factors, rename them
 #   in one place, set limits, center points (if required), etc
+# * factor names, units; response name and units must be kept general and not hard coded all over
 
 # Experimental conditions
 # ===============================
 # Baseline and limits
-baseline_xA = 98.0
-baseline_xB = 35.0
-baseline_xC = 'Low'
-limits_A = [80, 120]
-limits_B = [30, 60]
+#baseline_xA = 98.0
+#baseline_xB = 35.0
+#baseline_xC = 'Low'
+limits_A = [2.0, 6.5]
+limits_B = [15, 34]
 time_delay = datetime.timedelta(0, 0*30*60) # time delay in seconds between experiments
 
 # Start and end point of the linear constraint region
 # constraint equation: x+y=2 (in scaled units)
-constraint_a = [100, 60]
-constraint_b = [120, 48]
+#constraint_a = [100, 60]
+#constraint_b = [120, 48]
 
 
 # Logging
@@ -112,9 +110,9 @@ def generate_result(the_student, factors, num_runs=0, pure_response=False):
     added is proportional to the number of runs.
     """
     x1s, x2s, x3s = factors
-    if x3s == 'Low':
+    if x3s == 'Z':
         x3s = 0.0
-    elif x3s == 'High':
+    elif x3s == 'Q':
         x3s = 1.0
 
     my_logger.debug('Generating a new experimental result for student number ' + the_student.student_number)
@@ -179,7 +177,8 @@ def plot_results(expts, the_student):
         factor_C.append(entry['factor_C'])
         response.append(entry['response'])
 
-    data_string = str(factor_A) + str(factor_B) + str(factor_C) + str(response)
+    data_string = str(factor_A) + str(factor_B) + str(factor_C) + \
+                  str(response) + str(the_student.student_number)
     filename = hashlib.md5(data_string).hexdigest() + '.png'
     full_filename = DJANGO_SETTINGS.MEDIA_ROOT + filename
 
@@ -196,8 +195,8 @@ def plot_results(expts, the_student):
     rect = [0.15, 0.1, 0.80, 0.85] # Left, bottom, width, height
     ax = fig.add_axes(rect, frameon=True)
     ax.set_title('Response surface: experiments performed', fontsize=16)
-    ax.set_xlabel('Reaction temperature [C]', fontsize=16)
-    ax.set_ylabel('Duration [min]', fontsize=16)
+    ax.set_xlabel('Raw material flow rate [kg/min]', fontsize=16)
+    ax.set_ylabel('Recycle flow rate [L/min]', fontsize=16)
 
     if show_result:
         r = 70         # resolution of surface
@@ -218,24 +217,24 @@ def plot_results(expts, the_student):
         #ax.clabel(CS_hi, inline=1, fontsize=10, fmt='%1.0f' )
 
     # Plot constraint
-    ax.plot([constraint_a[0], constraint_b[0]], [constraint_a[1], constraint_b[1]], color="#EA8700", linewidth=2)
+    #ax.plot([constraint_a[0], constraint_b[0]], [constraint_a[1], constraint_b[1]], color="#EA8700", linewidth=2)
 
     # Baseline marker and label
-    ax.text(baseline_xA, baseline_xB, "    Baseline", horizontalalignment='left', verticalalignment='center', color="#0000FF")
-    ax.plot(baseline_xA, baseline_xB, 'r.', linewidth=2, ms=20)
+    #ax.text(baseline_xA, baseline_xB, "    Baseline", horizontalalignment='left', verticalalignment='center', color="#0000FF")
+    #ax.plot(baseline_xA, baseline_xB, 'r.', linewidth=2, ms=20)
 
     for idx, entry_A in enumerate(factor_A):
-        if factor_C[idx] == 'Low':
+        if factor_C[idx] == 'Z':
             ax.plot(entry_A, factor_B[idx], 'k.', ms=20)
         else:
             ax.plot(entry_A, factor_B[idx], 'r.', ms=20)
         ax.text(entry_A+dx, factor_B[idx]+dy, str(idx+1))
 
     ax.plot(107, 57, 'k.', ms=20)
-    ax.text(108, 57, 'Low NaCl concentration', va='center', ha='left')
+    ax.text(108, 57, 'Impeller Z', va='center', ha='left')
 
     ax.plot(107, 59, 'r.', ms=20)
-    ax.text(108, 59, 'High NaCl concentration', va='center', ha='left')
+    ax.text(108, 59, 'Impeller Q', va='center', ha='left')
 
     ax.set_xlim(limits_A)
     ax.set_ylim(limits_B)
@@ -262,7 +261,6 @@ def sign_in(request):
     """
     Verifies the user. If they are registered, then proceed with the experimental results
     """
-    #my_logger.debug('Sign-in page activated')
     if request.method == 'POST':
         form_student_number = request.POST.get('student_number', '')
         my_logger.debug('Student number (POST: sign_in) = '+ str(form_student_number))
@@ -279,7 +277,11 @@ def sign_in(request):
     # Non-POST access of the sign-in page: display the login page to the user
     else:
         my_logger.debug('Non-POST sign-in from %s' % get_IP_address(request))
-        return render_to_response('sign_in_form.html')
+
+        ctxdict = {}
+        ctxdict.update(csrf(request))
+        return render_to_response('sign_in_form.html', ctxdict,
+                                     context_instance=RequestContext(request))
 
 def get_experiment_list(the_student):
     """ Returns a list of experiments associates with `the_student` (a Django record)"""
@@ -304,18 +306,15 @@ def get_experiment_list(the_student):
         counter += 1
     return prev_expts
 
-def render_next_experiment(the_student):
+def render_next_experiment(request, the_student):
     """ Setup the dictionary and HTML for the student to enter their next experiment.
 
     the_student: Django record for the student
     """
     # Get the student's details into the template format
-    if the_student.grad_student:
-        level = '600'
-    else:
-        level = '400'
-    student = {'name': the_student.first_name + ' ' + the_student.last_name,
-               'level': level, 'number': the_student.student_number, 'email': the_student.email_address,
+
+    student = {'name': the_student.first_name,
+               'number': the_student.student_number, 'email': the_student.email_address,
                'runs_used_so_far': the_student.runs_used_so_far}
 
     prev_expts = get_experiment_list(the_student)
@@ -328,9 +327,9 @@ def render_next_experiment(the_student):
     #my_logger.debug('Profit = ' + str(highest_profit))
 
     #5.0×Your optimum−BaselineTrue optimum−Baseline−0.25N+3.0
-    student['baseline'] = the_student.offset/4.0 + 43.0
+    #student['baseline'] = the_student.offset/4.0 + 43.0
     student['max_profit'] = the_student.offset/4.0 + 63.0
-    student['profit_bonus'] = np.round(5.0 * (highest_profit - student['baseline']) / (student['max_profit'] - student['baseline'])- 0.25*the_student.runs_used_so_far + 3.0, 1)
+    student['profit_bonus'] = 'NA' #np.round(5.0 * (highest_profit - student['baseline']) / (student['max_profit'] - student['baseline'])- 0.25*the_student.runs_used_so_far + 3.0, 1)
 
     # Generate a picture of previous experiments
     filename = plot_results(prev_expts, the_student)
@@ -343,9 +342,22 @@ def render_next_experiment(the_student):
                 'figure_filename': DJANGO_SETTINGS.MEDIA_URL + filename}
 
     my_logger.info('Dealing with student = ' + str(the_student.student_number) + '; has run ' + str(len(prev_expts)) + ' already.')
-    t = loader.get_template("deal-with-experiment.html")
-    c = Context({'PrevExpts': prev_expts, 'Student': student, 'Settings': settings})
-    return HttpResponse(t.render(c))
+    #t = loader.get_template("deal-with-experiment.html")
+    #c = Context({'PrevExpts': prev_expts,
+    #             'Student': student,
+    #             'Settings': settings,
+    #             })
+    ctxdict = {}
+    ctxdict.update(csrf(request))
+    ctxdict.update({'PrevExpts': prev_expts,
+                 'Student': student,
+                 'Settings': settings,
+                 })
+    return render_to_response('deal-with-experiment.html', ctxdict,
+                                 context_instance=RequestContext(request))
+
+
+    #return HttpResponse(t.render(c))
 
 def setup_experiment(request, the_student):
     """
@@ -353,7 +365,7 @@ def setup_experiment(request, the_student):
     We can assume the student is already registered.
     """
     my_logger.debug('About to run experiment for student = ' + str(the_student.student_number))
-    return render_next_experiment(the_student)
+    return render_next_experiment(request, the_student)
 
 def report_invalid_factors(student_number):
     my_logger.debug('Invalid values for factors received from student ' + student_number)
@@ -379,9 +391,9 @@ def run_experiment(request, token):
     factor_A = request.POST.get('factor_A', '')
     factor_B = request.POST.get('factor_B', '')
     factor_C = request.POST.get('factor_C', '')
-    if factor_C == 'Low':
+    if factor_C == 'Z':
         pass
-    elif factor_C == 'High':
+    elif factor_C == 'Q':
         pass
     else:
         report_invalid_factors(student_number)
@@ -395,20 +407,20 @@ def run_experiment(request, token):
 
     # Check constraints:
     satisfied = True
-    if factor_A > 120.0 or factor_A < 80.0:
-        satisfied = False
-    if factor_B > 60.0 or factor_B < 30.0:
-        satisfied = False
+    #if factor_A > 120.0 or factor_A < 80.0:
+    #    satisfied = False
+    #if factor_B > 60.0 or factor_B < 30.0:
+    #    satisfied = False
 
     # 2011
     # m = (36.6666666666666667-50.0)/(480.0 - 450.0)
     # c = 50.0 - m * 450.0
 
     # 2012
-    m = (48.0 - 60.0)/(120.0 - 100.0)
-    c = 60.0 - m * 100.0
-    if factor_A*m + c < factor_B:    # predicted_B > actual_B: then you are in the constraint region
-        satisfied = False
+    #m = (48.0 - 60.0)/(120.0 - 100.0)
+    #c = 60.0 - m * 100.0
+    #if factor_A*m + c < factor_B:    # predicted_B > actual_B: then you are in the constraint region
+    #    satisfied = False
 
     if not satisfied:
         my_logger.debug('Invalid values for factors received from student ' + student_number)
@@ -474,7 +486,7 @@ def run_experiment(request, token):
     token.active = False
     token.save()
 
-    return render_next_experiment(the_student)
+    return render_next_experiment(request, the_student)
 
 def download_csv(request, token):
     """ From the download link on the output"""
@@ -488,7 +500,7 @@ def download_csv(request, token):
     response = HttpResponse(mimetype='text/csv')
     response['Content-Disposition'] = 'attachment; filename=takehome-group-' + the_student.student_number + '-' + token + '.csv'
     writer = csv.writer(response)
-    writer.writerow(['Number', 'DateTime', 'Reactor temperature [C]', 'Duration [min]', 'NaCl concentration', 'Profit [c/kg]'])
+    writer.writerow(['Number', 'DateTime', 'Raw material flow [kg/min]', 'Recycle flow [L/min]', 'Impeller type', 'Profit [$/hour]'])
     #writer.writerow(['0','Baseline','93.0','50.0','Low','63.5'])
     for expt in prev_expts:
         writer.writerow([str(expt['number']),
@@ -516,7 +528,7 @@ def download_pdf(request, token):
     BMARGIN = 15*mm
 
     c.setFont("Helvetica-Bold", 20)
-    c.drawCentredString(W/2, H-TMARGIN, '4C3/6C3 take-home exam: question 4 report')
+    c.drawCentredString(W/2, H-TMARGIN, '4C3/6C3 response surface question')
     text = c.beginText(LMARGIN, H-TMARGIN-10*mm)
     text.setFont("Helvetica-Bold", 14)
     text.textLines('Student name(s): %s\n' % the_student.first_name)
@@ -527,7 +539,7 @@ def download_pdf(request, token):
     frameWidth = W - (LMARGIN + RMARGIN)
     frameHeight = H - (TMARGIN + BMARGIN+30*mm)
     frame = Frame(LMARGIN, BMARGIN, frameWidth, frameHeight, showBoundary=0)
-    table_data = [['Run', 'Date/Time of experiment', 'Reaction temperature [C]', 'Duration [min]', 'NaCl concentration', 'Profit [c/kg]']]
+    table_data = [['Run', 'Date/Time of experiment', 'RM flow rate [kg/min]', 'Recycle flow rate [L/min]', 'Impeller type', 'Profit [$/hr]']]
 
     prev_expts = get_experiment_list(the_student)
     for expt in prev_expts:

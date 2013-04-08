@@ -3,6 +3,7 @@
 
 <h2>Group details</h2>
 <form action="/" method="POST" enctype="multipart/form-data">
+	{% csrf_token %}
 	<table class="sign-in-table">
 		<tr>
 			<td>Group number:</td>
@@ -11,5 +12,4 @@
 		</tr>
 	</table>
 </form>
-<li> Time delay between experiments has been reduced to 30 minutes to compensate for the limited time available before hand in.
 {% endblock %}

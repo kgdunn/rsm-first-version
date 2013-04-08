@@ -7,7 +7,7 @@ admin.autodiscover()
 urlpatterns = patterns('',
     # Example:
 
-    # Uncomment the admin/doc line below and add 'django.contrib.admindocs' 
+    # Uncomment the admin/doc line below and add 'django.contrib.admindocs'
     # to INSTALLED_APPS to enable admin documentation:
     # (r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
@@ -15,5 +15,5 @@ urlpatterns = patterns('',
     (r'^admin/', include(admin.site.urls)),
 
     # URLS are from the Experiment app
-    (r'', include('rsm.experiment.urls')),
+    (r'', include('experiment.urls')),
 )
