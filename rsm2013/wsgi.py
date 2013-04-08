@@ -14,8 +14,25 @@ framework.
 
 """
 import os
-
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "rsm2013.settings")
+
+import sys
+sys.path.append('/var/django/')
+sys.path.append('/var/django/rsm/')
+sys.path.append('/var/django/rsm/rsm2013/')
+
+
+#import logging.handlers
+#log_file = logging.getLogger('debug')
+#log_file.setLevel(logging.DEBUG)
+#fh = logging.handlers.RotatingFileHandler('/var/django/rsm/wsgi.log', maxBytes=5000000, backupCount=10)
+#formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+#fh.setFormatter(formatter)
+#log_file.addHandler(fh)
+#log_file.debug('Starting WSGI')
+#import sys
+#log_file.debug('PATH = %s' % str(sys.path))
+
 
 # This application object is used by any WSGI server configured to use this
 # file. This includes Django's development server, if the WSGI_APPLICATION

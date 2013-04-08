@@ -1,5 +1,5 @@
 from django.contrib import admin
-from rsm.experiment.models import Student, Experiment, Token
+from experiment.models import Student, Experiment, Token
 
 class TokenAdmin(admin.ModelAdmin):
     list_per_page = 2000

@@ -84,13 +84,13 @@ function validate_factor_B(factor_B)
                 <!--<td>{{Student.baseline}} [$/hour]</td>-->
         <!--</tr>-->
         <tr>
-                <td>Maximum profit:</td>
+                <td>Maximum profit so far:</td>
                 <td>{{Student.max_profit}} [$/hour]</td>
         </tr>
-        <tr>
+<!--        <tr>
                 <td>Grades bonus:</td>
                 <td>{{Student.profit_bonus}} </td>
-        </tr>
+        </tr>-->
         <tr>
                 <td>Experiments used so far:</td>
                 <td>{{Student.runs_used_so_far}} (maximum of {{Settings.max_experiments_allowed}} experiments allowed)</td>
@@ -104,7 +104,7 @@ function validate_factor_B(factor_B)
 <h2>The next experiment</h2>
 
 Generate the next experiment at the following conditions:
-<form action="/run-experiment-{{Settings.token}}/" method="POST" enctype="multipart/form-data">
+<form action="/rsm/run-experiment-{{Settings.token}}/" method="POST" enctype="multipart/form-data">
     {% csrf_token %}
 	<table class="data-entry-table">
 		<tr>
@@ -133,7 +133,7 @@ Generate the next experiment at the following conditions:
 <hr>
 <h2>Previous experiments run</h2>
 
-<a href="/download-csv-{{Settings.token}}/">Download data</a> | <a href="/download-pdf-{{Settings.token}}/">Download report</a>
+<a href="/rsm/download-csv-{{Settings.token}}/">Download data</a> | <a href="/rsm/download-pdf-{{Settings.token}}/">Download report</a>
 <table class="prev-expts-table">
     <tr>
     <th>Experiment number</th>

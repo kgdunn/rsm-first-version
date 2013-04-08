@@ -36,7 +36,7 @@ from numpy.lib import scimath as SM
 # Settings
 token_length = 12
 max_experiments_allowed = 25
-show_result = True
+show_result = False
 
 
 # Command line use
@@ -44,7 +44,7 @@ show_result = True
 #sys.path.extend(['/var/django/projects/'])
 #os.environ['DJANGO_SETTINGS_MODULE'] = 'rsm.settings'
 
-from rsm.experiment.models import Student, Token, Experiment
+from experiment.models import Student, Token, Experiment
 
 # Improvements for next time
 #
