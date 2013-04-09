@@ -35,7 +35,7 @@ from numpy.lib import scimath as SM
 
 # Settings
 token_length = 12
-max_experiments_allowed = 25
+max_experiments_allowed = 26
 show_result = False
 
 
@@ -161,9 +161,11 @@ def generate_result(the_student, factors, num_runs=0, pure_response=False):
         y_noisy = y
     else:
         np.random.seed(int(the_student.student_number))
-        noise_sd = 0.05 * np.abs(np.max(y))
-        y_noisy = y + np.random.normal(loc=0.0, scale=noise_sd)
-        # Add a slow decay in the response with time:
+        noise_sd = 0.008 * np.abs(np.max(y))
+        # You have to generate ``num_runs`` numbers, because we reset the seed
+        # everytime.
+        y_noisy = y + np.random.normal(loc=0.0, scale=noise_sd, size=num_runs)[-1]
+        # And add a slow decay in the response with time:
         y_noisy = y_noisy - num_runs/6.0
 
     return (y, y_noisy)
@@ -211,7 +213,7 @@ def plot_results(expts, the_student):
     full_filename = DJANGO_SETTINGS.MEDIA_ROOT + filename
 
     # Offsets for labeling points
-    dx = 1.2
+    dx = 0.05
     dy = 0.05
 
     # Create the figure
@@ -253,8 +255,8 @@ def plot_results(expts, the_student):
 
     baseline_xA, baseline_xB = transform_coords(x1=3.5, x2=24,
                                                 rot=the_student.rotation)
-    my_logger.debug('Baseline [%s] = (%s, %s)' % (the_student.student_number,
-                                                  baseline_xA, baseline_xB))
+    #my_logger.debug('Baseline [%s] = (%s, %s)' % (the_student.student_number,
+    #                                              baseline_xA, baseline_xB))
 
     # Baseline marker and label.
     ax.text(baseline_xA, baseline_xB, "    Baseline",
@@ -263,9 +265,9 @@ def plot_results(expts, the_student):
     ax.plot(baseline_xA, baseline_xB, 'r.', linewidth=2, ms=20)
 
     for idx, entry_A in enumerate(factor_A):
-        xA, xB = transform_coords(x1=entry_A, x2= factor_B[idx],
-                                  rot=the_student.rotation)
 
+        # Do not rotate the location of the labels
+        xA, xB = entry_A, factor_B[idx]
         if factor_C[idx] == 'Z':
             ax.plot(xA, xB, 'k.', ms=20)
         else:
@@ -312,7 +314,7 @@ def sign_in(request):
             the_student = Student.objects.get(student_number=form_student_number)
         except Student.DoesNotExist:
             # If student number not in list, tell them they are not registered
-            return HttpResponseRedirect('/not-registered')
+            return HttpResponseRedirect('/rsm/not-registered')
         else:
             return setup_experiment(request, the_student)
 
@@ -369,8 +371,13 @@ def render_next_experiment(request, the_student):
     #my_logger.debug('Profit = ' + str(highest_profit))
 
     #5.0×Your optimum−BaselineTrue optimum−Baseline−0.25N+3.0
-    #student['baseline'] = the_student.offset/4.0 + 43.0
-    student['max_profit'] = the_student.offset/4.0 + 63.0
+    baseline_xA, baseline_xB = transform_coords(x1=3.5, x2=24,
+                                                rot=the_student.rotation)
+    student['baseline_A'] = baseline_xA
+    student['baseline_B'] = baseline_xB
+
+    #the_student.offset/4.0 + 43.0
+    student['max_profit'] = 'NA' #the_student.offset/4.0 + 63.0
     student['profit_bonus'] = 'NA' #np.round(5.0 * (highest_profit - student['baseline']) / (student['max_profit'] - student['baseline'])- 0.25*the_student.runs_used_so_far + 3.0, 1)
 
     # Generate a picture of previous experiments

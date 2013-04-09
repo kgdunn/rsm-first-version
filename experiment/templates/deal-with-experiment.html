@@ -79,10 +79,10 @@ function validate_factor_B(factor_B)
                 <td>{{Student.email}}</td>
         </tr>
 {{Student.runs_bonus}}
-        <!--<tr>-->
-                <!--<td>Baseline profit:</td>-->
-                <!--<td>{{Student.baseline}} [$/hour]</td>-->
-        <!--</tr>-->
+        <tr>
+                <td>Baseline conditions:</td>
+                <td>A = {{Student.baseline_A|floatformat:2}} [kg/min]; B = {{Student.baseline_B|floatformat:1}} [L/min]; C = Impeller Z</td>
+        </tr>
         <tr>
                 <td>Maximum profit so far:</td>
                 <td>{{Student.max_profit}} [$/hour]</td>

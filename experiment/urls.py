@@ -3,13 +3,13 @@ from experiment import views
 from django.conf import settings
 
 
-urlpatterns = patterns('',
-    url(r'^$', views.sign_in),
-    url(r'^/$', views.sign_in, name='rsm_sign_in'),
-    url(r'^not-registered$', views.not_registered_student),
-    url(r'^run-experiment-(.*)/', views.run_experiment),
-    url(r'^download-csv-(.*)/', views.download_csv),
-    url(r'^download-pdf-(.*)/', views.download_pdf),
+urlpatterns = patterns('rsm/',
+    url(r'^rsm$', views.sign_in),
+    url(r'^rsm/$', views.sign_in, name='rsm_sign_in'),
+    url(r'^rsm/not-registered$', views.not_registered_student),
+    url(r'^rsm/run-experiment-(.*)/', views.run_experiment),
+    url(r'^rsm/download-csv-(.*)/', views.download_csv),
+    url(r'^rsm/download-pdf-(.*)/', views.download_pdf),
 )
 
 
@@ -18,6 +18,6 @@ if settings.DEBUG:
     # 404 gets overridden by Django when in debug mode
     urlpatterns += patterns(
         '',
-        (r'^media/(?P<path>.*)$',
+        (r'^media-rsm/(?P<path>.*)$',
          'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
     )
