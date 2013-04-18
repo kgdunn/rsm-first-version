@@ -112,7 +112,7 @@ def generate_result(the_student, factors, num_runs=0, pure_response=False):
     elif x3s == 'Q':
         x3s = 1.0
 
-    my_logger.debug('Generating a new experimental result for student number ' + the_student.student_number)
+    #my_logger.debug('Generating a new experimental result for student number ' + the_student.student_number)
 
     x1off = (2+6.5)/2.0    # midpoint
     x1scale = (6.5-2)/6.0  # a range of 6 units from low to high
@@ -322,7 +322,16 @@ def sign_in(request):
     else:
         my_logger.debug('Non-POST sign-in from %s' % get_IP_address(request))
 
-        ctxdict = {}
+
+        # Generate leaderboard:
+        leaders = []
+        for student in Student.objects.all():
+            about, _ = about_student(student)
+            leaders.append([about['bonus'], about['group_name']])
+        leaders.sort(reverse=True)
+
+
+        ctxdict = {'leaderboard': leaders}
         ctxdict.update(csrf(request))
         return render_to_response('sign_in_form.html', ctxdict,
                                      context_instance=RequestContext(request))
@@ -350,16 +359,13 @@ def get_experiment_list(the_student):
         counter += 1
     return prev_expts
 
-def render_next_experiment(request, the_student):
-    """ Setup the dictionary and HTML for the student to enter their next experiment.
-
-    the_student: Django record for the student
+def about_student(the_student):
     """
-    # Get the student's details into the template format
-
+    Creates a structure about the student
+    """
     student = {'name': the_student.first_name,
                'group_name': the_student.group_name,
-               'number': the_student.student_number, 
+               'number': the_student.student_number,
                'email': the_student.email_address,
                'runs_used_so_far': the_student.runs_used_so_far}
 
@@ -372,11 +378,47 @@ def render_next_experiment(request, the_student):
     highest_profit = np.max(response)
     #my_logger.debug('Profit = ' + str(highest_profit))
 
-    #5.0×Your optimum−BaselineTrue optimum−Baseline−0.25N+3.0
     baseline_xA, baseline_xB = transform_coords(x1=3.5, x2=24,
-                                                rot=the_student.rotation)
+                                                    rot=the_student.rotation)
     student['baseline_A'] = baseline_xA
     student['baseline_B'] = baseline_xB
+
+    baseline_profit = generate_result(the_student,
+                                      (baseline_xA, baseline_xB, "Z"),
+                                      num_runs=0,
+                                      pure_response=True)[0]
+
+    # determined from the response surface contour plot
+
+    r = 70         # resolution of surface
+    x1 = np.arange(limits_A[0], limits_A[1], step=(limits_A[1] - limits_A[0])/(r+0.0))
+    x2 = np.arange(limits_B[0], limits_B[1], step=(limits_B[1] - limits_B[0])/(r+0.0))
+    X3_lo = 'Z'
+    X3_hi = 'Q'
+
+    # I know the best profit is with X3 = low value ('Z')
+    X1, X2 = np.meshgrid(x1, x2)
+    Y_lo, Y_lo_noisy = generate_result(the_student, (X1, X2, X3_lo),
+                                       pure_response=True)
+
+    max_profit = np.max(Y_lo)
+
+    #print (highest_profit - baseline_profit)/(max_profit - baseline_profit)
+    bonus = 12*(highest_profit - baseline_profit)\
+                   /(max_profit - baseline_profit) - 0.5*len(prev_expts)
+    student['bonus'] = bonus
+    student['max_profit'] = max_profit
+
+    return student, prev_expts
+
+def render_next_experiment(request, the_student):
+    """ Setup the dictionary and HTML for the student to enter their next experiment.
+
+    the_student: Django record for the student
+    """
+    # Get the student's details into the template format
+    student, prev_expts = about_student(the_student)
+
 
     #the_student.offset/4.0 + 43.0
     student['max_profit'] = 'NA' #the_student.offset/4.0 + 63.0

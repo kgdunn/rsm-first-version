@@ -12,4 +12,18 @@
 		</tr>
 	</table>
 </form>
+
+<b>* Score</b> = a formula that takes into account how close you are to the optimum, and the budget you've spent on running experiments.
+<table class="prev-expts-table">
+	<tr>
+		<th>Team name</th>
+		<th>Score*</th>
+    </tr>
+	{% for item in leaderboard %}
+	<tr class="{% cycle 'even' 'odd' %} expt-result">
+		<td>{{item.1}}</td>
+		<td>{{item.0|floatformat:1}}</td>
+	</tr>
+	{% endfor %}
+</table>
 {% endblock %}
