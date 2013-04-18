@@ -2,6 +2,7 @@ from django.db import models
 
 class Student(models.Model):
     first_name = models.CharField(max_length=250)
+    group_name = models.CharField(max_length=250)
     student_number = models.CharField(max_length=7, unique=True, primary_key=True)
     email_address = models.EmailField()
     runs_used_so_far = models.IntegerField(default=0)
@@ -10,7 +11,7 @@ class Student(models.Model):
 
 
     def __unicode__(self):
-        return u'%s: %i' % (self.first_name, self.runs_used_so_far)
+        return u'%s [%s]: %i' % (self.first_name, str(self.student_number), self.runs_used_so_far)
 
 class Experiment(models.Model):
 
