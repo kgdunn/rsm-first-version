@@ -60,7 +60,7 @@ from experiment.models import Student, Token, Experiment
 # Baseline and limits
 limits_A = [2.0, 6.5]
 limits_B = [15, 34]
-time_delay = datetime.timedelta(0, 0*60) # time delay in seconds between experiments
+time_delay = datetime.timedelta(0, 180*60) # time delay in seconds between experiments
 
 # Start and end point of the linear constraint region
 # constraint equation: x+y=2 (in scaled units)
@@ -358,7 +358,9 @@ def render_next_experiment(request, the_student):
     # Get the student's details into the template format
 
     student = {'name': the_student.first_name,
-               'number': the_student.student_number, 'email': the_student.email_address,
+               'group_name': the_student.group_name,
+               'number': the_student.student_number, 
+               'email': the_student.email_address,
                'runs_used_so_far': the_student.runs_used_so_far}
 
     prev_expts = get_experiment_list(the_student)
