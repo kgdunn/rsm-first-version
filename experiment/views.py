@@ -35,8 +35,8 @@ from numpy.lib import scimath as SM
 
 # Settings
 token_length = 12
-max_experiments_allowed = 26
-show_result = False
+max_experiments_allowed = 0
+show_result = True
 
 
 # Command line use
@@ -241,8 +241,8 @@ def plot_results(expts, the_student):
         Y_hi, Y_hi_noisy = generate_result(the_student, (X1, X2, X3_hi),
                                            pure_response=True)
 
-        levels_lo = np.linspace(-25, 100, 51)*100
-        levels_hi = np.linspace(-25, 101, 51)*100
+        levels_lo = np.linspace(-25, 100, 75)*100
+        levels_hi = np.linspace(-25, 101, 75)*100
         CS_lo = ax.contour(X1, X2, Y_lo, colors='#777777', levels=levels_lo,
                            linestyles='solid', linewidths=1)
         CS_hi = ax.contour(X1, X2, Y_hi, colors='#FF0000', levels=levels_hi,
@@ -376,6 +376,7 @@ def about_student(the_student):
     for entry in prev_expts:
         response.append(entry['response'])
     highest_profit = np.max(response)
+    student['highest_profit'] = highest_profit
     #my_logger.debug('Profit = ' + str(highest_profit))
 
     baseline_xA, baseline_xB = transform_coords(x1=3.5, x2=24,
@@ -387,6 +388,7 @@ def about_student(the_student):
                                       (baseline_xA, baseline_xB, "Z"),
                                       num_runs=0,
                                       pure_response=True)[0]
+    student['baseline'] = baseline_profit
 
     # determined from the response surface contour plot
 
@@ -405,7 +407,7 @@ def about_student(the_student):
 
     #print (highest_profit - baseline_profit)/(max_profit - baseline_profit)
     bonus = 12*(highest_profit - baseline_profit)\
-                   /(max_profit - baseline_profit) - 0.5*len(prev_expts)
+                   /(max_profit - baseline_profit) - 0.2*len(prev_expts)
     student['bonus'] = bonus
     student['max_profit'] = max_profit
 
@@ -421,8 +423,8 @@ def render_next_experiment(request, the_student):
 
 
     #the_student.offset/4.0 + 43.0
-    student['max_profit'] = 'NA' #the_student.offset/4.0 + 63.0
-    student['profit_bonus'] = 'NA' #np.round(5.0 * (highest_profit - student['baseline']) / (student['max_profit'] - student['baseline'])- 0.25*the_student.runs_used_so_far + 3.0, 1)
+    #student['max_profit'] = 'NA' #the_student.offset/4.0 + 63.0
+    student['profit_bonus'] = np.round(5.0 * (student['highest_profit'] - student['baseline']) / (student['max_profit'] - student['baseline'])- 0.25*the_student.runs_used_so_far + 3.0, 1)
 
     # Generate a picture of previous experiments
     filename = plot_results(prev_expts, the_student)
