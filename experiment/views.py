@@ -18,6 +18,9 @@ import hashlib
 import datetime
 
 # Plotting imports
+# sudo apt-get install libfreetype6-dev libpng-dev
+# sudo pip install matplotlib
+
 import matplotlib as matplotlib
 from matplotlib.figure import Figure  # for plotting
 from matplotlib.backends.backend_agg import FigureCanvasAgg
@@ -35,8 +38,8 @@ from numpy.lib import scimath as SM
 
 # Settings
 token_length = 12
-max_experiments_allowed = 0
-show_result = True
+max_experiments_allowed =4
+show_result = False
 
 
 # Command line use

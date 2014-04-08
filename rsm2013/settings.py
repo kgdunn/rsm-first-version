@@ -13,8 +13,8 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        #'NAME': '/var/django/rsm/rsm2013.db', # Or path to database file if using sqlite3.
-        'NAME': '/home/kevindunn/django-projects/rsm2013/rsm2013.db',
+        'NAME': '/var/django/rsm/rsm2013.db', # Or path to database file if using sqlite3.
+        #'NAME': '/home/kevindunn/django-projects/rsm2013/rsm2013.db',
         'USER': '',                      # Not used with sqlite3.
         'PASSWORD': '',                  # Not used with sqlite3.
         'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
@@ -48,7 +48,7 @@ USE_TZ = True
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/home/media/media.lawrence.com/media/"
 MEDIA_ROOT = '/var/django/rsm/media/'
-MEDIA_ROOT = '/home/kevindunn/django-projects/rsm2013/media/'
+#MEDIA_ROOT = '/home/kevindunn/django-projects/rsm2013/media/'
 
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
@@ -64,7 +64,7 @@ STATIC_ROOT = ''
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
-STATIC_URL = '/static/'
+STATIC_URL = '/media/static/'
 
 # Additional locations of static files
 STATICFILES_DIRS = (
@@ -133,7 +133,7 @@ INSTALLED_APPS = (
 # more details on how to customize your logging configuration.
 
 LOG_FILENAME = '/var/django/rsm/logfile.log'
-LOG_FILENAME = '/home/kevindunn/django-projects/rsm/logfile.log'
+#LOG_FILENAME = '/home/kevindunn/django-projects/rsm/logfile.log'
 
 LOGGING = {
     'version': 1,
