@@ -63,7 +63,7 @@ from experiment.models import Student, Token, Experiment
 # Baseline and limits
 limits_A = [2.0, 6.5]
 limits_B = [15, 34]
-time_delay = datetime.timedelta(0, 180*60) # time delay in seconds between experiments
+time_delay = datetime.timedelta(0, 0.2*60) # time delay in seconds between experiments
 
 # Start and end point of the linear constraint region
 # constraint equation: x+y=2 (in scaled units)
@@ -115,7 +115,7 @@ def generate_result(the_student, factors, num_runs=0, pure_response=False):
     elif x3s == 'Q':
         x3s = 1.0
 
-    #my_logger.debug('Generating a new experimental result for student number ' + the_student.student_number)
+    my_logger.debug('Generating a new experimental result for student number ' + the_student.student_number + ' at [%s]' % str(factors))
 
     x1off = (2+6.5)/2.0    # midpoint
     x1scale = (6.5-2)/6.0  # a range of 6 units from low to high
@@ -553,6 +553,7 @@ def run_experiment(request, token):
         c = Context({})
         return HttpResponse(t.render(c))
 
+    my_logger.debug('From "run_experiment(...)" code')
     response, response_noisy = generate_result(the_student, [factor_A, factor_B, factor_C], num_runs=the_student.runs_used_so_far+1)
 
     # Check the time between experiments:
