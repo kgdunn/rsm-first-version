@@ -5,3 +5,4 @@ logfile.log
 .*\.wsgi
 media/admin/
 media/.*\.png
+build/
