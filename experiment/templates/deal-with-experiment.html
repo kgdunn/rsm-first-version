@@ -81,15 +81,15 @@ function validate_factor_B(factor_B)
 {{Student.runs_bonus}}
         <tr>
                 <td>Baseline conditions:</td>
-                <td><b>A</b> = {{Student.baseline_A|floatformat:0}} K; <b>B</b> = {{Student.baseline_B|floatformat:1}} min; and <b>C</b> = Xylene</td>
+                <td><b>A</b> = {{Student.baseline_A|floatformat:0}} K; <b>B</b> = {{Student.baseline_B|floatformat:1}} min; and <b>C</b> = Xylene which has a profit of ${{Student.baseline|floatformat:2}}</td> 
         </tr>
         <tr>
-                <td>Maximum profit so far:</td>
-                <td>{{Student.max_profit|floatformat:2}} [$/kg]</td>
+                <td>Maximum profit possible:</td>
+                <td>{# {{Student.max_profit|floatformat:2}} [$/kg] #}Will be revealed later</td>
         </tr>
 <!--        <tr>
                 <td>Grades bonus:</td>
-                <td>{{Student.profit_bonus}} </td>
+                <td>{# {{Student.profit_bonus}} #}</td>
         </tr>-->
         <tr>
                 <td>Experiments used so far:</td>

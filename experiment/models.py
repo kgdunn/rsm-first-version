@@ -4,7 +4,7 @@ class Student(models.Model):
     first_name = models.CharField(max_length=250)
     group_name = models.CharField(max_length=250)
     student_number = models.CharField(max_length=7, unique=True, primary_key=True)
-    email_address = models.EmailField()
+    email_address = models.EmailField(blank=True,)
     runs_used_so_far = models.IntegerField(default=0)
     offset = models.FloatField()
     rotation = models.FloatField()
