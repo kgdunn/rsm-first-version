@@ -38,7 +38,7 @@ from numpy.lib import scimath as SM
 
 # Settings
 token_length = 12
-max_experiments_allowed = 25
+max_experiments_allowed = 20
 show_result = False
 
 # Command line use
@@ -283,8 +283,8 @@ def plot_results(expts, the_student):
         Y_hi, Y_hi_noisy = generate_result(the_student, (X1, X2, X3_hi),
                                            pure_response=True)
 
-        levels_lo = np.linspace(-50, 2000, 75)*1
-        levels_hi = np.linspace(-50, 2101, 75)*1
+        levels_lo = np.linspace(-50, 3000, 75)*1
+        levels_hi = np.linspace(-50, 3101, 75)*1
         CS_lo = ax.contour(X1, X2, Y_lo, colors='#777777', levels=levels_lo,
                            linestyles='solid', linewidths=1)
         CS_hi = ax.contour(X1, X2, Y_hi, colors='#FF0000', levels=levels_hi,
