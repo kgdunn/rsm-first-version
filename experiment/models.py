@@ -16,8 +16,8 @@ class Student(models.Model):
 class Experiment(models.Model):
 
     factor_C_choice = (
-            ('Z', u'Impeller Z'),
-            ('Q', u'Impeller Q'),
+            ('H', u'Hexane'),
+            ('X', u'Xylene'),
             )
 
     student = models.ForeignKey(Student)
