@@ -115,7 +115,7 @@ def generate_result(the_student, factors, num_runs=0, pure_response=False):
     elif x3s == 'X':
         x3s = 1.0
 
-    #my_logger.debug('Generating a new experimental result for student number %f' % the_student.offset)
+    my_logger.debug('Generating a new experimental result for student number %f' % the_student.offset)
 
     x1off = (390+480.0)/2.0    # midpoint
     x1scale = (480-390)/6.0  # a range of 6 units from low to high
@@ -125,13 +125,24 @@ def generate_result(the_student, factors, num_runs=0, pure_response=False):
     x2scale = (50-20)/6.0
     x2s = np.array((np.array(x2s) - x2off)/(x2scale+0.0))
     r = the_student.rotation * np.pi / 180.0
+
     x1 = x1s * np.cos(r)  -  x2s * np.sin(r)
     x2 = x1s * np.sin(r)  +  x2s * np.cos(r)
 
-    num = np.sin(x1)*x1 - 0.9*x1**2 - 0.5*x2 + 2*x1*x2
-    den = 0.05*x1**2 + 0.2*x2 + 0.04*x2**2
+    # 2014: we make a linear mapping
+    # x1 at -6 to -6
+    # x1 at +6 to -14
+    # x2 at -6 to -17
+    # x2 at +6 to -04
 
-    y = 0.1* np.real(num)/np.real(den) - 0.015*x1**2 - 0.3*x1
+    x1 = x1*(-2/3.0) - 10.0
+    x2 = x2*(13/12.0) - 10.5
+    num = np.sin(x1)*x1 - 0.9*x1*x1 - 0.5*x2 + 2*x1*x2
+    den = 0.05*x1*x1 + 0.2*x2 + 0.04*x2*x2
+    y = 0.1 * np.real(num)/np.real(den) - 0.015*x1*x1 - 0.3*x1 #+ the_student.offset
+    y = y * 500.0
+    #y = 0.1 * num/den# - 0.015*x1*x1 - 0.3*x1 #+ the_student.offset
+   
 
 
     # 2013 objective function
