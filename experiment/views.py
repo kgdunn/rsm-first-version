@@ -39,7 +39,7 @@ from numpy.lib import scimath as SM
 # Settings
 token_length = 12
 max_experiments_allowed =4
-show_result = False
+show_result = True
 
 
 # Command line use
@@ -61,8 +61,8 @@ from experiment.models import Student, Token, Experiment
 # Experimental conditions
 # ===============================
 # Baseline and limits
-limits_A = [2.0, 6.5]
-limits_B = [15, 34]
+limits_A = [390.0, 480.0]
+limits_B = [20, 50]
 time_delay = datetime.timedelta(0, 0.2*60) # time delay in seconds between experiments
 
 # Start and end point of the linear constraint region
@@ -110,29 +110,48 @@ def generate_result(the_student, factors, num_runs=0, pure_response=False):
     added is proportional to the number of runs.
     """
     x1s, x2s, x3s = factors
-    if x3s == 'Z':
+    if x3s == 'H':
         x3s = 0.0
-    elif x3s == 'Q':
+    elif x3s == 'X':
         x3s = 1.0
 
-    my_logger.debug('Generating a new experimental result for student number ' + the_student.student_number + ' at [%s]' % str(factors))
+    #my_logger.debug('Generating a new experimental result for student number %f' % the_student.offset)
 
-    x1off = (2+6.5)/2.0    # midpoint
-    x1scale = (6.5-2)/6.0  # a range of 6 units from low to high
+    x1off = (390+480.0)/2.0    # midpoint
+    x1scale = (480-390)/6.0  # a range of 6 units from low to high
     x1s = np.array((np.array(x1s) - x1off)/(x1scale+0.0))
 
-    x2off = (15+34)/2.0     #
-    x2scale = (34-15)/6.0
+    x2off = (20+50)/2.0     #
+    x2scale = (50-20)/6.0
     x2s = np.array((np.array(x2s) - x2off)/(x2scale+0.0))
-
-    # 2013 objective function
-    # Apply rotation
     r = the_student.rotation * np.pi / 180.0
     x1 = x1s * np.cos(r)  -  x2s * np.sin(r)
     x2 = x1s * np.sin(r)  +  x2s * np.cos(r)
-    num = 10.2*x1 + 5.6*x2 - 5.9*x3s**2 - 3*x2**2 - 12.6*x1*x2
-    den = (0.1*x1**2 + 0.5*x2**2+ 1)**2
-    y = 50 * np.real(num)/np.real(den) + 444 + the_student.offset
+
+    num = np.sin(x1)*x1 - 0.9*x1**2 - 0.5*x2 + 2*x1*x2
+    den = 0.05*x1**2 + 0.2*x2 + 0.04*x2**2
+
+    y = 0.1* np.real(num)/np.real(den) - 0.015*x1**2 - 0.3*x1
+
+
+    # 2013 objective function
+    #if x3s == 'Z':
+    #    x3s = 0.0
+    #elif x3s == 'Q':
+    #    x3s = 1.0
+    #x1off = (2+6.5)/2.0    # midpoint
+    #x1scale = (6.5-2)/6.0  # a range of 6 units from low to high
+    #x1s = np.array((np.array(x1s) - x1off)/(x1scale+0.0))
+    #x2off = (15+34)/2.0     #
+    #x2scale = (34-15)/6.0
+    #x2s = np.array((np.array(x2s) - x2off)/(x2scale+0.0))
+    # Apply rotation
+    #r = the_student.rotation * np.pi / 180.0
+    #x1 = x1s * np.cos(r)  -  x2s * np.sin(r)
+    #x2 = x1s * np.sin(r)  +  x2s * np.cos(r)
+    #num = 10.2*x1 + 5.6*x2 - 5.9*x3s**2 - 3*x2**2 - 12.6*x1*x2
+    #den = (0.1*x1**2 + 0.5*x2**2+ 1)**2
+    #y = 50 * np.real(num)/np.real(den) + 444 + the_student.offset
 
     # 2012 objective function
     # -----------------------
@@ -177,15 +196,15 @@ def transform_coords(x1, x2, rot):
     """
     Scale the real-world units to coded units; rotate; then unscale back.
     """
-    x1 = 3.5
-    x2 = 24.0
+    x1 = 435.0
+    x2 = 35.0
 
-    x1off = (2+6.5)/2.0    # midpoint
-    x1scale = (6.5-2)/6.0  # a range of 6 units from low to high
+    x1off = (390+480)/2.0    # midpoint
+    x1scale = (480-390)/6.0  # a range of 6 units from low to high
     x1s = np.array((np.array(x1) - x1off)/(x1scale+0.0))
 
-    x2off = (15+34)/2.0     #
-    x2scale = (34-15)/6.0
+    x2off = (20+50)/2.0     #
+    x2scale = (50-20)/6.0
     x2s = np.array((np.array(x2) - x2off)/(x2scale+0.0))
 
     r = rot * np.pi / 180.0
@@ -228,15 +247,15 @@ def plot_results(expts, the_student):
     rect = [0.15, 0.1, 0.80, 0.85] # Left, bottom, width, height
     ax = fig.add_axes(rect, frameon=True)
     ax.set_title('Response surface: experiments performed', fontsize=16)
-    ax.set_xlabel('Raw material flow rate [kg/min]', fontsize=16)
-    ax.set_ylabel('Recycle flow rate [L/min]', fontsize=16)
+    ax.set_xlabel('Temperature [K]', fontsize=16)
+    ax.set_ylabel('Batch duration [min]', fontsize=16)
 
     if show_result:
         r = 70         # resolution of surface
         x1 = np.arange(limits_A[0], limits_A[1], step=(limits_A[1] - limits_A[0])/(r+0.0))
         x2 = np.arange(limits_B[0], limits_B[1], step=(limits_B[1] - limits_B[0])/(r+0.0))
-        X3_lo = 'Z'
-        X3_hi = 'Q'
+        X3_lo = 'H'
+        X3_hi = 'X'
 
         X1, X2 = np.meshgrid(x1, x2)
         Y_lo, Y_lo_noisy = generate_result(the_student, (X1, X2, X3_lo),
@@ -256,7 +275,7 @@ def plot_results(expts, the_student):
     # Plot constraint
     #ax.plot([constraint_a[0], constraint_b[0]], [constraint_a[1], constraint_b[1]], color="#EA8700", linewidth=2)
 
-    baseline_xA, baseline_xB = transform_coords(x1=3.5, x2=24,
+    baseline_xA, baseline_xB = transform_coords(x1=430, x2=35,
                                                 rot=the_student.rotation)
     #my_logger.debug('Baseline [%s] = (%s, %s)' % (the_student.student_number,
     #                                              baseline_xA, baseline_xB))
@@ -271,7 +290,7 @@ def plot_results(expts, the_student):
 
         # Do not rotate the location of the labels
         xA, xB = entry_A, factor_B[idx]
-        if factor_C[idx] == 'Z':
+        if factor_C[idx] == 'H':
             ax.plot(xA, xB, 'k.', ms=20)
         else:
             ax.plot(xA, xB, 'r.', ms=20)
@@ -382,13 +401,13 @@ def about_student(the_student):
     student['highest_profit'] = highest_profit
     #my_logger.debug('Profit = ' + str(highest_profit))
 
-    baseline_xA, baseline_xB = transform_coords(x1=3.5, x2=24,
+    baseline_xA, baseline_xB = transform_coords(x1=430, x2=35,
                                                     rot=the_student.rotation)
     student['baseline_A'] = baseline_xA
     student['baseline_B'] = baseline_xB
 
     baseline_profit = generate_result(the_student,
-                                      (baseline_xA, baseline_xB, "Z"),
+                                      (baseline_xA, baseline_xB, "X"),
                                       num_runs=0,
                                       pure_response=True)[0]
     student['baseline'] = baseline_profit
@@ -398,12 +417,12 @@ def about_student(the_student):
     r = 70         # resolution of surface
     x1 = np.arange(limits_A[0], limits_A[1], step=(limits_A[1] - limits_A[0])/(r+0.0))
     x2 = np.arange(limits_B[0], limits_B[1], step=(limits_B[1] - limits_B[0])/(r+0.0))
-    X3_lo = 'Z'
-    X3_hi = 'Q'
+    X3_lo = 'H'
+    X3_hi = 'X'
 
-    # I know the best profit is with X3 = low value ('Z')
+    # I know the best profit is with X3 = high value ('X')
     X1, X2 = np.meshgrid(x1, x2)
-    Y_lo, Y_lo_noisy = generate_result(the_student, (X1, X2, X3_lo),
+    Y_lo, Y_lo_noisy = generate_result(the_student, (X1, X2, X3_hi),
                                        pure_response=True)
 
     max_profit = np.max(Y_lo)
@@ -486,9 +505,9 @@ def run_experiment(request, token):
     factor_A = request.POST.get('factor_A', '')
     factor_B = request.POST.get('factor_B', '')
     factor_C = request.POST.get('factor_C', '')
-    if factor_C == 'Z':
+    if factor_C == 'H':
         pass
-    elif factor_C == 'Q':
+    elif factor_C == 'X':
         pass
     else:
         report_invalid_factors(student_number)
@@ -526,9 +545,15 @@ def run_experiment(request, token):
     #    satisfied = False
 
     # 2013
-    if (factor_A > 6.5) or (factor_A < 2.0):
+    #if (factor_A > 6.5) or (factor_A < 2.0):
+    #    satisfied = False
+    #if (factor_B > 34.0) or (factor_B < 15.0):
+    #    satisfied = False
+
+    # 2014
+    if (factor_A > 480.0) or (factor_A < 390.):
         satisfied = False
-    if (factor_B > 34.0) or (factor_B < 15.0):
+    if (factor_B > 50.0) or (factor_B < 20.0):
         satisfied = False
 
     if not satisfied:
@@ -603,7 +628,7 @@ def download_csv(request, token):
     response = HttpResponse(mimetype='text/csv')
     response['Content-Disposition'] = 'attachment; filename=takehome-group-' + the_student.student_number + '-' + token + '.csv'
     writer = csv.writer(response)
-    writer.writerow(['Number', 'DateTime', 'Raw material flow [kg/min]', 'Recycle flow [L/min]', 'Impeller type', 'Profit [$/hour]'])
+    writer.writerow(['Number', 'DateTime', 'Batch temperature [K]', 'Batch duration [min]', 'Solvent type', 'Profit [$/kg]'])
     #writer.writerow(['0','Baseline','93.0','50.0','Low','63.5'])
     for expt in prev_expts:
         writer.writerow([str(expt['number']),
@@ -642,7 +667,7 @@ def download_pdf(request, token):
     frameWidth = W - (LMARGIN + RMARGIN)
     frameHeight = H - (TMARGIN + BMARGIN+30*mm)
     frame = Frame(LMARGIN, BMARGIN, frameWidth, frameHeight, showBoundary=0)
-    table_data = [['Run', 'Date/Time of experiment', 'RM flow rate [kg/min]', 'Recycle flow rate [L/min]', 'Impeller type', 'Profit [$/hr]']]
+    table_data = [['Run', 'Date/Time of experiment', 'Batch temperature [K]', 'Batch duration [min]', 'Solvent type', 'Profit [$/kg]']]
 
     prev_expts = get_experiment_list(the_student)
     for expt in prev_expts:
