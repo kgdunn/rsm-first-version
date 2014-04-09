@@ -38,9 +38,8 @@ from numpy.lib import scimath as SM
 
 # Settings
 token_length = 12
-max_experiments_allowed =4
-show_result = True
-
+max_experiments_allowed = 25
+show_result = False
 
 # Command line use
 #import sys, os
@@ -64,6 +63,8 @@ from experiment.models import Student, Token, Experiment
 limits_A = [390.0, 480.0]
 limits_B = [20, 50]
 time_delay = datetime.timedelta(0, 0.2*60) # time delay in seconds between experiments
+true_optimum = [404, 35]
+start_point  = [460.0, 35.0]
 
 # Start and end point of the linear constraint region
 # constraint equation: x+y=2 (in scaled units)
@@ -115,14 +116,14 @@ def generate_result(the_student, factors, num_runs=0, pure_response=False):
     elif x3s == 'X':
         x3s = 1.0
 
-    my_logger.debug('Generating a new experimental result for student number %f' % the_student.offset)
+    my_logger.debug('Generating a new experimental result for student number %s' % the_student.student_number)
 
-    x1off = (390+480.0)/2.0    # midpoint
-    x1scale = (480-390)/6.0  # a range of 6 units from low to high
+    x1off = (limits_A[0]+limits_A[1])/2.0    # midpoint
+    x1scale = (limits_A[1]-limits_A[0])/6.0  # a range of 6 units from low to high
     x1s = np.array((np.array(x1s) - x1off)/(x1scale+0.0))
 
-    x2off = (20+50)/2.0     #
-    x2scale = (50-20)/6.0
+    x2off = (limits_B[0]+limits_B[1])/2.0     #
+    x2scale = (limits_B[1]-limits_B[0])/6.0
     x2s = np.array((np.array(x2s) - x2off)/(x2scale+0.0))
     r = the_student.rotation * np.pi / 180.0
 
@@ -130,17 +131,25 @@ def generate_result(the_student, factors, num_runs=0, pure_response=False):
     x2 = x1s * np.sin(r)  +  x2s * np.cos(r)
 
     # 2014: we make a linear mapping
-    # x1 at -6 to -6
-    # x1 at +6 to -14
-    # x2 at -6 to -17
-    # x2 at +6 to -04
+    # x1 at -3 to -6
+    # x1 at +3 to -14
+    # x2 at -3 to -17
+    # x2 at +3 to -04
 
-    x1 = x1*(-2/3.0) - 10.0
-    x2 = x2*(13/12.0) - 10.5
-    num = np.sin(x1)*x1 - 0.9*x1*x1 - 0.5*x2 + 2*x1*x2
+
+    x1 = x1*(-8/6.0) - 10.0
+    x2 = x2*(13/6.0) - 10.5
+
+    if x3s == 1.0: # better option, due to Xylene
+        num = np.sin(x1)*x1 - 0.9*x1*x1 - 0.5*x2 + 2*x1*x2
+    elif x3s == 0.0:
+        num =  - 0.9*x1*x1 + 1.5*x1*x2
     den = 0.05*x1*x1 + 0.2*x2 + 0.04*x2*x2
     y = 0.1 * np.real(num)/np.real(den) - 0.015*x1*x1 - 0.3*x1 #+ the_student.offset
     y = y * 500.0
+
+
+
     #y = 0.1 * num/den# - 0.015*x1*x1 - 0.3*x1 #+ the_student.offset
    
 
@@ -207,15 +216,15 @@ def transform_coords(x1, x2, rot):
     """
     Scale the real-world units to coded units; rotate; then unscale back.
     """
-    x1 = 435.0
-    x2 = 35.0
+    x1 = start_point[0]
+    x2 = start_point[1]
 
-    x1off = (390+480)/2.0    # midpoint
-    x1scale = (480-390)/6.0  # a range of 6 units from low to high
+    x1off = (limits_A[0]+limits_A[1])/2.0    # midpoint
+    x1scale = (limits_A[1]-limits_A[0])/6.0  # a range of 6 units from low to high
     x1s = np.array((np.array(x1) - x1off)/(x1scale+0.0))
 
-    x2off = (20+50)/2.0     #
-    x2scale = (50-20)/6.0
+    x2off = (limits_B[0]+limits_B[1])/2.0     #
+    x2scale = (limits_B[1]-limits_B[0])/6.0
     x2s = np.array((np.array(x2) - x2off)/(x2scale+0.0))
 
     r = rot * np.pi / 180.0
@@ -274,8 +283,8 @@ def plot_results(expts, the_student):
         Y_hi, Y_hi_noisy = generate_result(the_student, (X1, X2, X3_hi),
                                            pure_response=True)
 
-        levels_lo = np.linspace(-25, 100, 75)*100
-        levels_hi = np.linspace(-25, 101, 75)*100
+        levels_lo = np.linspace(-50, 2000, 75)*1
+        levels_hi = np.linspace(-50, 2101, 75)*1
         CS_lo = ax.contour(X1, X2, Y_lo, colors='#777777', levels=levels_lo,
                            linestyles='solid', linewidths=1)
         CS_hi = ax.contour(X1, X2, Y_hi, colors='#FF0000', levels=levels_hi,
@@ -286,8 +295,8 @@ def plot_results(expts, the_student):
     # Plot constraint
     #ax.plot([constraint_a[0], constraint_b[0]], [constraint_a[1], constraint_b[1]], color="#EA8700", linewidth=2)
 
-    baseline_xA, baseline_xB = transform_coords(x1=430, x2=35,
-                                                rot=the_student.rotation)
+    baseline_xA, baseline_xB = transform_coords(x1=start_point[0], x2=start_point[1],
+                                                rot=360-the_student.rotation)
     #my_logger.debug('Baseline [%s] = (%s, %s)' % (the_student.student_number,
     #                                              baseline_xA, baseline_xB))
 
@@ -412,8 +421,8 @@ def about_student(the_student):
     student['highest_profit'] = highest_profit
     #my_logger.debug('Profit = ' + str(highest_profit))
 
-    baseline_xA, baseline_xB = transform_coords(x1=430, x2=35,
-                                                    rot=the_student.rotation)
+    baseline_xA, baseline_xB = transform_coords(x1=start_point[0], x2=start_point[1],
+                                                    rot=360-the_student.rotation)
     student['baseline_A'] = baseline_xA
     student['baseline_B'] = baseline_xB
 
@@ -562,9 +571,9 @@ def run_experiment(request, token):
     #    satisfied = False
 
     # 2014
-    if (factor_A > 480.0) or (factor_A < 390.):
+    if (factor_A > limits_A[1]) or (factor_A < limits_A[0]):
         satisfied = False
-    if (factor_B > 50.0) or (factor_B < 20.0):
+    if (factor_B > limits_B[1]) or (factor_B < limits_B[0]):
         satisfied = False
 
     if not satisfied:
