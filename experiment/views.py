@@ -62,7 +62,7 @@ from experiment.models import Student, Token, Experiment
 # Baseline and limits
 limits_A = [390.0, 480.0]
 limits_B = [20, 50]
-time_delay = datetime.timedelta(0, 0.2*60) # time delay in seconds between experiments
+time_delay = datetime.timedelta(0, 3*60*60) # time delay in seconds between experiments
 true_optimum = [404, 35]
 start_point  = [460.0, 35.0]
 
@@ -116,7 +116,7 @@ def generate_result(the_student, factors, num_runs=0, pure_response=False):
     elif x3s == 'X':
         x3s = 1.0
 
-    my_logger.debug('Generating a new experimental result for student number %s' % the_student.student_number)
+    #my_logger.debug('Generating a new experimental result for student number %s' % the_student.student_number)
 
     x1off = (limits_A[0]+limits_A[1])/2.0    # midpoint
     x1scale = (limits_A[1]-limits_A[0])/6.0  # a range of 6 units from low to high
@@ -143,11 +143,12 @@ def generate_result(the_student, factors, num_runs=0, pure_response=False):
     if x3s == 1.0: # better option, due to Xylene
         num = np.sin(x1)*x1 - 0.9*x1*x1 - 0.5*x2 + 2*x1*x2
     elif x3s == 0.0:
-        num =  - 0.9*x1*x1 + 1.5*x1*x2
+        num =  - 0.9*x1*x1 + 1.8*x1*x2
     den = 0.05*x1*x1 + 0.2*x2 + 0.04*x2*x2
     y = 0.1 * np.real(num)/np.real(den) - 0.015*x1*x1 - 0.3*x1 #+ the_student.offset
-    y = y * 500.0
+    y = y * 500.0 + the_student.offset
 
+    
 
 
     #y = 0.1 * num/den# - 0.015*x1*x1 - 0.3*x1 #+ the_student.offset
@@ -409,6 +410,7 @@ def about_student(the_student):
                'group_name': the_student.group_name,
                'number': the_student.student_number,
                'email': the_student.email_address,
+               'budget_used_so_far': the_student.runs_used_so_far*14000,
                'runs_used_so_far': the_student.runs_used_so_far}
 
     prev_expts = get_experiment_list(the_student)
@@ -442,14 +444,15 @@ def about_student(the_student):
 
     # I know the best profit is with X3 = high value ('X')
     X1, X2 = np.meshgrid(x1, x2)
-    Y_lo, Y_lo_noisy = generate_result(the_student, (X1, X2, X3_hi),
+    Y_hi, Y_hi_noisy = generate_result(the_student, (X1, X2, X3_hi),
                                        pure_response=True)
 
-    max_profit = np.max(Y_lo)
+    max_profit = np.max(Y_hi)
 
     #print (highest_profit - baseline_profit)/(max_profit - baseline_profit)
     bonus = 12*(highest_profit - baseline_profit)\
                    /(max_profit - baseline_profit) - 0.2*len(prev_expts)
+    #bonus = 0
     student['bonus'] = bonus
     student['max_profit'] = max_profit
 

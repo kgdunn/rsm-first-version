@@ -1,6 +1,6 @@
 # Django settings for rsm2014 project.
 
-DEBUG = True
+DEBUG = False
 #TEMPLATE_DEBUG = DEBUG
 TEMPLATE_DEBUG = True
 
@@ -122,6 +122,9 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable admin documentation:
     'django.contrib.admindocs',
     'experiment',
+
+    # To get nicer template formatting
+    'django.contrib.humanize',
 )
 
 # A sample logging configuration. The only tangible logging

@@ -1,6 +1,6 @@
 {% extends "base_page.html" %}
 {% block content %}
-
+{% load humanize %}
 <style>
 .constraint_OK
 {
@@ -74,14 +74,13 @@ function validate_factor_B(factor_B)
                 <td>Group name:</td>
                 <td>"<i>{{Student.group_name}}</i>"</td>
         </tr>
-        <tr>
+<!--        <tr>
                 <td>Contact email address:</td>
                 <td>{{Student.email}}</td>
-        </tr>
-{{Student.runs_bonus}}
+        </tr>-->
         <tr>
                 <td>Baseline conditions:</td>
-                <td><b>A</b> = {{Student.baseline_A|floatformat:0}} K; <b>B</b> = {{Student.baseline_B|floatformat:1}} min; and <b>C</b> = Xylene which has a profit of ${{Student.baseline|floatformat:2}}</td> 
+                <td><b>A</b> = {{Student.baseline_A|floatformat:0}} K; <b>B</b> = {{Student.baseline_B|floatformat:0}} minutes; and <b>C</b> = Xylene which has a profit of <b>${{Student.baseline|floatformat:0}}</b></td> 
         </tr>
         <tr>
                 <td>Maximum profit possible:</td>
@@ -91,6 +90,14 @@ function validate_factor_B(factor_B)
                 <td>Grades bonus:</td>
                 <td>{# {{Student.profit_bonus}} #}</td>
         </tr>-->
+        <tr>
+                <td>Total budget:</td>
+                <td>$280,000 (though a max of $250,000 is preferred)</td>
+        </tr>
+        <tr>
+                <td>Budget used so far:</td>
+                <td>${{Student.budget_used_so_far|intcomma}}</td>
+        </tr>
         <tr>
                 <td>Experiments used so far:</td>
                 <td>{{Student.runs_used_so_far}} (maximum of {{Settings.max_experiments_allowed}} experiments allowed)</td>
@@ -152,8 +159,8 @@ Generate the next experiment at the following conditions:
         <td class="datetime">{{expt.date_time|date:"d F Y H:i:s"}}</td>
 		<td class="factor_A">{{expt.factor_A|floatformat:0}}</td>
 		<td class="factor_B">{{expt.factor_B|floatformat:0}}</td>
-        <td class="factor_C">{{expt.factor_C}}</td>
-		<td class="response">{{expt.response|floatformat:1}}</td>
+	        <td class="factor_C">{{expt.factor_C}}</td>
+		<td class="response">{{expt.response|floatformat:0}}</td>
     </tr>
     {% endspaceless %}
     {% endfor %}
